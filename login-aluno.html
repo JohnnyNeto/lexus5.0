@@ -175,7 +175,7 @@
       <label for="email">Usuário ou e-mail</label>
       <input type="email" id="email" placeholder="Digite seu usuário ou e-mail" />
 
-      <button class="disabled-button" disabled>Entrar</button>
+      <button id="botaoEntrar" class="disabled-button" disabled>Entrar</button>
 
       <a class="link-codigo" id="mostrarCodigo">🔐 Cadastrar com código</a>
 
@@ -248,7 +248,45 @@
         erro.style.display = "block";
       }
     });
-  </script>
 
+    document.getElementById("botaoEntrar").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const senha = prompt("Digite sua senha:");  // Opcional: ou adicione um campo de senha
+
+      if (!email || !senha) {
+        alert("Por favor, preencha o email e a senha.");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, senha }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Email ou senha inválidos.");
+        }
+
+        const dados = await response.json();
+
+        // ✅ Salva no localStorage
+        localStorage.setItem("email", email);
+        localStorage.setItem("senha", senha);
+        localStorage.setItem("nome", dados.nome);
+        localStorage.setItem("cargo", dados.cargo);
+        localStorage.setItem("codigo_sala", dados.codigo_sala);
+
+        // ✅ Redireciona para home-aluno
+        window.location.href = "home-aluno.html";
+
+      } catch (erro) {
+        alert("Erro ao logar: " + erro.message);
+      }
+    });
+  </script>
 </body>
 </html>
