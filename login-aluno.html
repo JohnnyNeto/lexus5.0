@@ -174,6 +174,8 @@
 
       <label for="email">Usuário ou e-mail</label>
       <input type="email" id="email" placeholder="Digite seu usuário ou e-mail" />
+      <label for="senhaLogin">Senha</label>
+      <input type="password" id="senhaLogin" placeholder="Digite sua senha" />
 
       <button id="botaoEntrar" class="disabled-button" disabled>Entrar</button>
 
@@ -185,6 +187,9 @@
 
         <label for="emailCadastro">E-mail</label>
         <input type="email" id="emailCadastro" placeholder="Digite seu e-mail" />
+
+        <label for="senhaCadastro">Senha</label>
+        <input type="password" id="senhaCadastro" placeholder="Crie uma senha (mínimo 6 caracteres)" />
 
         <label for="codigo">Código de acesso</label>
         <input type="text" id="codigo" placeholder="Digite seu código" />
@@ -198,13 +203,13 @@
   </div>
 
   <script>
-    // Mostrar seção do código
     document.getElementById("mostrarCodigo").addEventListener("click", () => {
       document.getElementById("codigoSection").style.display = "block";
     });
 
     const nomeUsuarioInput = document.getElementById("nomeUsuario");
     const emailCadastroInput = document.getElementById("emailCadastro");
+    const senhaCadastroInput = document.getElementById("senhaCadastro");
     const codigoInput = document.getElementById("codigo");
     const botaoCadastrar = document.getElementById("botaoCadastrar");
 
@@ -212,6 +217,7 @@
       if (
         nomeUsuarioInput.value.trim() !== "" &&
         emailCadastroInput.value.trim() !== "" &&
+        senhaCadastroInput.value.trim().length >= 6 &&
         codigoInput.value.trim() !== ""
       ) {
         botaoCadastrar.disabled = false;
@@ -226,9 +232,13 @@
 
     nomeUsuarioInput.addEventListener("input", validarCamposCadastro);
     emailCadastroInput.addEventListener("input", validarCamposCadastro);
+    senhaCadastroInput.addEventListener("input", validarCamposCadastro);
     codigoInput.addEventListener("input", validarCamposCadastro);
 
-    botaoCadastrar.addEventListener("click", function () {
+    botaoCadastrar.addEventListener("click", async function () {
+      const nome = nomeUsuarioInput.value.trim();
+      const email = emailCadastroInput.value.trim();
+      const senha = senhaCadastroInput.value.trim();
       const codigo = codigoInput.value.trim();
       const sucesso = document.getElementById("mensagemSucesso");
       const erro = document.getElementById("mensagemErro");
@@ -236,27 +246,65 @@
       sucesso.style.display = "none";
       erro.style.display = "none";
 
-      if (codigo === "ABC123") {
+      try {
+        const response = await fetch("http://localhost:8000/cadastrar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nome,
+            email,
+            senha,
+            cargo: "aluno",
+            sala: codigo,
+          }),
+        });
+
+        const dados = await response.json();
+
+        if (!response.ok) {
+          throw new Error(dados.detail || "Erro ao cadastrar.");
+        }
+
         sucesso.style.display = "block";
 
-        // Redireciona para home-aluno.html após 1.5 segundos
+        // Armazenar no localStorage
+        localStorage.setItem("nome", nome);
+        localStorage.setItem("email", email);
+        localStorage.setItem("codigo_sala", codigo);
+
         setTimeout(() => {
           window.location.href = "home-aluno.html";
         }, 1500);
-
-      } else {
+      } catch (e) {
+        erro.textContent = `❌ ${e.message}`;
         erro.style.display = "block";
       }
     });
 
-    document.getElementById("botaoEntrar").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const senha = prompt("Digite sua senha:");  // Opcional: ou adicione um campo de senha
+    const emailLogin = document.getElementById("email");
+    const senhaLogin = document.getElementById("senhaLogin");
+    const botaoEntrar = document.getElementById("botaoEntrar");
 
-      if (!email || !senha) {
-        alert("Por favor, preencha o email e a senha.");
-        return;
+    function validarLogin() {
+      if (emailLogin.value.trim() !== "" && senhaLogin.value.trim().length >= 6) {
+        botaoEntrar.disabled = false;
+        botaoEntrar.classList.remove("disabled-button");
+        botaoEntrar.classList.add("enabled-button");
+      } else {
+        botaoEntrar.disabled = true;
+        botaoEntrar.classList.remove("enabled-button");
+        botaoEntrar.classList.add("disabled-button");
       }
+    }
+
+    emailLogin.addEventListener("input", validarLogin);
+    senhaLogin.addEventListener("input", validarLogin);
+
+    botaoEntrar.addEventListener("click", async () => {
+      const email = emailLogin.value.trim();
+      const senha = senhaLogin.value.trim();
 
       try {
         const response = await fetch("http://localhost:8000/login", {
@@ -273,20 +321,17 @@
 
         const dados = await response.json();
 
-        // ✅ Salva no localStorage
-        localStorage.setItem("email", email);
-        localStorage.setItem("senha", senha);
+        // Salvar no localStorage
+        localStorage.setItem("email", dados.email);
         localStorage.setItem("nome", dados.nome);
-        localStorage.setItem("cargo", dados.cargo);
         localStorage.setItem("codigo_sala", dados.codigo_sala);
 
-        // ✅ Redireciona para home-aluno
         window.location.href = "home-aluno.html";
-
       } catch (erro) {
         alert("Erro ao logar: " + erro.message);
       }
     });
-  </script>
+</script>
+
 </body>
 </html>

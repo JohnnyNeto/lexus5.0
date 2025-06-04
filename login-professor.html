@@ -107,15 +107,10 @@
       cursor: not-allowed;
     }
 
-    .generate-button {
+    .enabled-button {
       width: 100%;
       background-color: #3c2a7c;
       color: white;
-    }
-
-    .generate-button:disabled {
-      background-color: #888;
-      cursor: not-allowed;
     }
 
     #btnIrHome {
@@ -163,15 +158,15 @@
     <div class="right">
       <img class="logo-img" src="images/lexus.png" alt="Logo Lexus" />
 
-      <!-- Campo usuário/email para login -->
+      <!-- Campo usuário/email -->
       <label for="email">Usuário ou e-mail</label>
       <input type="email" id="email" placeholder="Digite seu usuário ou e-mail" />
 
-      <!-- Campo código senha -->
-      <label for="senha">Código</label>
-      <input type="password" id="senha" placeholder="Digite o código" />
+      <!-- Campo senha -->
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" placeholder="Digite sua senha" />
 
-      <button class="disabled-button" disabled>Entrar</button>
+      <button id="btnEntrar" class="disabled-button" disabled>Entrar</button>
 
       <a class="link-codigo" id="mostrarCodigo" style="margin-bottom:20px; display:inline-block; cursor:pointer; color:#3c2a7c; text-align:center;">🔐 Criar código</a>
 
@@ -182,7 +177,10 @@
         <label for="usuarioEmail">E-mail</label>
         <input type="email" id="usuarioEmail" placeholder="Digite seu e-mail" />
 
-        <button class="generate-button" id="gerarCodigoBtn" disabled>Gerar Código</button>
+        <label for="usuarioSenha">Senha</label>
+        <input type="password" id="usuarioSenha" placeholder="Crie uma senha" />
+
+        <button class="enabled-button" id="gerarCodigoBtn" disabled>Gerar Código</button>
         <div class="codigo-gerado" id="codigoGerado"></div>
         <button id="btnIrHome">Continuar</button>
       </div>
@@ -194,6 +192,7 @@
     const codigoSection = document.getElementById('codigoSection');
     const usuarioNome = document.getElementById('usuarioNome');
     const usuarioEmail = document.getElementById('usuarioEmail');
+    const usuarioSenha = document.getElementById('usuarioSenha');
     const gerarCodigoBtn = document.getElementById('gerarCodigoBtn');
     const codigoGerado = document.getElementById('codigoGerado');
     const btnIrHome = document.getElementById('btnIrHome');
@@ -205,14 +204,18 @@
     function validarCamposGerarCodigo() {
       const nomeValido = usuarioNome.value.trim().length >= 3;
       const email = usuarioEmail.value.trim();
+      const senha = usuarioSenha.value.trim();
       const emailValido = email.includes('@') && email.includes('.');
-      gerarCodigoBtn.disabled = !(nomeValido && emailValido);
+      const senhaValida = senha.length >= 6;
+
+      gerarCodigoBtn.disabled = !(nomeValido && emailValido && senhaValida);
       codigoGerado.textContent = '';
       btnIrHome.style.display = 'none';
     }
 
     usuarioNome.addEventListener('input', validarCamposGerarCodigo);
     usuarioEmail.addEventListener('input', validarCamposGerarCodigo);
+    usuarioSenha.addEventListener('input', validarCamposGerarCodigo);
 
     function gerarCodigoUnico() {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -223,23 +226,97 @@
       return codigo;
     }
 
-    gerarCodigoBtn.addEventListener('click', () => {
+    gerarCodigoBtn.addEventListener('click', async () => {
       const nome = usuarioNome.value.trim();
       const email = usuarioEmail.value.trim();
-      if (!nome || !email) return;
-
+      const senha = usuarioSenha.value.trim();
       const codigo = gerarCodigoUnico();
-      codigoGerado.style.display = 'block';
-      codigoGerado.textContent = `Seu código gerado: ${codigo}`;
-      gerarCodigoBtn.disabled = true;
-      btnIrHome.style.display = 'block';
+
+      try {
+        const response = await fetch('http://localhost:8000/cadastrar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nome,
+            email,
+            senha,
+            cargo: 'professor',
+            sala: codigo
+          })
+        });
+
+        if (!response.ok) {
+          const erro = await response.json();
+          throw new Error(erro.detail || 'Erro ao cadastrar');
+        }
+
+        // Salvar no localStorage
+        localStorage.setItem('nome', nome);
+        localStorage.setItem('email', email);
+        localStorage.setItem('codigo_sala', codigo);
+
+        codigoGerado.textContent = `Seu código gerado: ${codigo}`;
+        btnIrHome.style.display = 'block';
+        gerarCodigoBtn.disabled = true;
+      } catch (error) {
+        alert("Erro ao cadastrar: " + error.message);
+      }
     });
 
     btnIrHome.addEventListener('click', () => {
       window.location.href = 'home.html';
     });
-  </script>
 
+    // LOGIN
+    const emailLogin = document.getElementById('email');
+    const senhaLogin = document.getElementById('senha');
+    const btnEntrar = document.getElementById('btnEntrar');
+
+    function validarLogin() {
+      if (emailLogin.value.trim() !== "" && senhaLogin.value.trim().length >= 6) {
+        btnEntrar.disabled = false;
+        btnEntrar.classList.remove('disabled-button');
+        btnEntrar.classList.add('enabled-button');
+      } else {
+        btnEntrar.disabled = true;
+        btnEntrar.classList.remove('enabled-button');
+        btnEntrar.classList.add('disabled-button');
+      }
+    }
+
+    emailLogin.addEventListener('input', validarLogin);
+    senhaLogin.addEventListener('input', validarLogin);
+
+    btnEntrar.addEventListener('click', async () => {
+      const email = emailLogin.value.trim();
+      const senha = senhaLogin.value.trim();
+
+      try {
+        const response = await fetch("http://localhost:8000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, senha }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Email ou senha inválidos.");
+        }
+
+        const dados = await response.json();
+
+        localStorage.setItem("email", dados.email);
+        localStorage.setItem("nome", dados.nome);
+        localStorage.setItem("codigo_sala", dados.codigo_sala);
+
+        window.location.href = "home.html";
+      } catch (erro) {
+        alert("Erro ao logar: " + erro.message);
+      }
+    });
+  </script>
 </body>
 </html>
-
