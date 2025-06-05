@@ -145,10 +145,16 @@
         
         .container {
             display: flex;
-            flex-wrap: wrap;
-            padding: 40px;
-            gap: 30px;
             justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
         }
         
         .left-panel {
@@ -202,6 +208,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            margin-top: 80px;
         }
         
         .upload-box input[type="file"] {
@@ -289,7 +296,7 @@
 
     <div class="container">
         <div class="left-panel">
-            <h2>Produção<br><small style="font-size:16px;color:#777">Temática: Fotografia - Atualidades</small></h2>
+            <h2>Produção<br><small style="font-size:16px;color:#777">Produção por: Fotografia</small></h2>
             <input type="text" placeholder="Adicione um tema se quiser...">
             <textarea id="textoRedacao" placeholder="Digite aqui seu texto..."></textarea>
             <div class="word-count" id="contadorPalavras">0 palavras</div>
@@ -309,28 +316,6 @@
     </div>
 
     <script>
-        const texto = document.getElementById("textoRedacao");
-        const contador = document.getElementById("contadorPalavras");
-        const uploadInput = document.getElementById("upload");
-        const temaInput = document.querySelector("input[type='text']");
-
-        const nome = localStorage.getItem("nome");
-        const email = localStorage.getItem("email");
-        const sala = localStorage.getItem("codigo_sala");
-
-        // Preencher os campos no dropdown do perfil
-        document.getElementById("perfilNome").textContent = nome || "Nome não disponível";
-        document.getElementById("perfilEmail").textContent = email || "Email não disponível";
-        document.getElementById("perfilSala").textContent = sala || "Sala não disponível";
-
-
-
-
-        texto.addEventListener("input", () => {
-            const palavras = texto.value.trim().split(/\s+/).filter(p => p !== "");
-            contador.textContent = `${palavras.length} palavra${palavras.length !== 1 ? 's' : ''}`;
-        });
-
         function mostrarPreview(event) {
             const file = event.target.files[0];
             const preview = document.getElementById("preview");
@@ -344,56 +329,56 @@
             }
         }
 
-        async function enviarRedacao() {
-        const tipo = "fotografia";
-        const titulo = temaInput.value.trim();
-        const conteudo = texto.value.trim();
-
-        if (conteudo.length === 0) {
-            alert("Por favor, digite o texto da redação.");
-            texto.focus();
-            return;
-        }
-        if (!uploadInput.files[0]) {
-            alert("Por favor, faça o upload de uma imagem.");
-            uploadInput.focus();
-            return;
+        function enviarRedacao() {
+            alert("Redação enviada com sucesso!");
         }
 
-        const formData = new FormData();
-        formData.append("email_aluno", email);
-        formData.append("codigo_sala", sala);
-        formData.append("tipo", tipo);
-        formData.append("titulo", titulo);
-        formData.append("conteudo", conteudo);
-        formData.append("imagem", uploadInput.files[0]);
+        const texto = document.getElementById("textoRedacao");
+        const contador = document.getElementById("contadorPalavras");
 
-        try {
-            const response = await fetch("http://127.0.0.1:8000/publicar", {
-                method: "POST",
-                body: formData,
-            });
+        texto.addEventListener("input", () => {
+            const palavras = texto.value.trim().split(/\s+/).filter(p => p !== "");
+            contador.textContent = `${palavras.length} palavra${palavras.length !== 1 ? 's' : ''}`;
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                alert("Erro ao enviar publicação: " + (errorData.detail || response.statusText));
-                return;
+        const perfilBtn = document.getElementById("perfilBtn");
+        const perfilDropdown = document.getElementById("perfilDropdown");
+        const produzirBtn = document.getElementById("produzirBtn");
+        const produzirDropdown = document.getElementById("produzirDropdown");
+
+        perfilBtn.addEventListener("click", () => {
+            const isVisible = perfilDropdown.style.display === "block";
+            perfilDropdown.style.display = isVisible ? "none" : "block";
+            produzirDropdown.style.display = "none";
+        });
+
+        produzirBtn.addEventListener("click", () => {
+            const isVisible = produzirDropdown.style.display === "block";
+            produzirDropdown.style.display = isVisible ? "none" : "block";
+            perfilDropdown.style.display = "none";
+        });
+
+        window.addEventListener("click", function(e) {
+            if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+                perfilDropdown.style.display = "none";
             }
+            if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
+                produzirDropdown.style.display = "none";
+            }
+        });
 
-            const data = await response.json();
-            alert(data.mensagem);
+        // 👇 Redirecionamento dinâmico do logo Lexus
+        const tipoUsuario = "aluno"; // ou "professor"
 
-            // Resetar campos
-            temaInput.value = "";
-            texto.value = "";
-            contador.textContent = "0 palavras";
-            uploadInput.value = "";
-            document.getElementById("preview").style.display = "none";
-
-        } catch (error) {
-            alert("Erro na comunicação com o servidor: " + error.message);
-        }
-    }
+        document.getElementById("logoLexus").addEventListener("click", () => {
+            if (tipoUsuario === "professor") {
+                window.location.href = "home.html";
+            } else {
+                window.location.href = "home-aluno.html";
+            }
+        });
     </script>
+
 </body>
+
 </html>

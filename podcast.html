@@ -145,10 +145,16 @@
         
         .container {
             display: flex;
-            flex-wrap: wrap;
-            padding: 40px;
-            gap: 30px;
             justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
         }
         
         .left-panel {
@@ -160,13 +166,13 @@
         
         .left-panel h2 {
             font-size: 24px;
-            color: #3c2a7c;
+            color: #1B4F72;
         }
         
         input[type="text"] {
             padding: 15px;
             border-radius: 12px;
-            border: 2px solid #3c2a7c;
+            border: 2px solid #1B4F72;
             width: 100%;
             font-size: 16px;
         }
@@ -174,7 +180,7 @@
         textarea {
             padding: 20px;
             border-radius: 12px;
-            border: 2px solid #3c2a7c;
+            border: 2px solid #1B4F72;
             width: 100%;
             height: 480px;
             font-size: 16px;
@@ -192,7 +198,7 @@
         .upload-box {
             flex: 0 1 280px;
             background-color: white;
-            border: 2px dashed #3c2a7c;
+            border: 2px dashed #1B4F72;
             border-radius: 15px;
             padding: 20px;
             text-align: center;
@@ -202,6 +208,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            margin-top: 80px;
         }
         
         .upload-box input[type="file"] {
@@ -212,7 +219,7 @@
             display: block;
             cursor: pointer;
             padding: 20px 5px;
-            color: #3c2a7c;
+            color: #1B4F72;
             text-align: center;
         }
         
@@ -231,7 +238,7 @@
         }
         
         .btn-enviar {
-            background-color: #3c2a7c;
+            background-color: #226680;
             color: white;
             border: none;
             padding: 12px 25px;
@@ -242,7 +249,7 @@
         }
         
         .btn-enviar:hover {
-            background-color: #2d1e63;
+            background-color: #164253;
         }
         
         @media (max-width: 768px) {
@@ -285,7 +292,7 @@
 
     <div class="container">
         <div class="left-panel">
-            <h2>Produção<br><small style="font-size:16px;color:#777">Temática: Podcast - Atualidades</small></h2>
+            <h2>Produção<br><small style="font-size:16px;color:#777">Produção por: Podcast</small></h2>
             <input type="text" placeholder="Adicione um tema se quiser...">
             <textarea id="textoRedacao" placeholder="Digite aqui seu texto..."></textarea>
             <div class="word-count" id="contadorPalavras">0 palavras</div>
@@ -297,7 +304,7 @@
         <div class="upload-box">
             <label for="upload" class="upload-label">
         <strong>🎙️</strong><br>
-        Upload do áudio
+        Upload do Podcast
       </label>
             <input type="file" id="upload" accept="audio/*" onchange="mostrarPreview(event)">
             <audio id="preview" class="upload-preview" controls style="display:none;"></audio>

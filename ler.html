@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ler Mais - Lexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        .navbar {
+            background-color: #226680;
+            padding: 18px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo-img {
+            max-height: 28px;
+            object-fit: contain;
+            transform: scale(1.4);
+            transform-origin: left center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-img:hover {
+            transform: scale(1.5);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            position: relative;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: #164253;
+        }
+        
+        .perfil-foto {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid white;
+            transition: transform 0.3s;
+        }
+        
+        .perfil-foto:hover {
+            transform: scale(1.05);
+        }
+        
+        .dropdown {
+            position: absolute;
+            top: 60px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            display: none;
+            z-index: 1000;
+            right: 0;
+            width: 260px;
+        }
+        
+        .dropdown h3 {
+            margin-bottom: 10px;
+            color: #226680;
+            font-size: 18px;
+        }
+        
+        .dropdown p {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        
+        .sair-btn {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        
+        .sair-btn:hover {
+            background-color: #164253;
+        }
+        
+        .main {
+            display: flex;
+            justify-content: space-between;
+            padding: 80px 50px;
+            align-items: center;
+            flex-wrap: wrap;
+            background: white;
+            max-width: 1200px;
+            width: 100%;
+            margin: 40px auto 60px auto;
+            border-radius: 14px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+            align-items: flex-start;
+        }
+        
+        .post-text {
+            max-width: 600px;
+        }
+        
+        .post-text h2 {
+            font-size: 26px;
+            color: #226680;
+            font-weight: 700;
+        }
+        
+        .post-date {
+            font-size: 18px;
+            color: #226680;
+            margin-bottom: 10px;
+        }
+        
+        .post-description {
+            font-size: 19px;
+            color: #555555;
+            font-weight: 600;
+            line-height: 1.8;
+        }
+        
+        .post-image {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .post-image img {
+            width: 440px;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .debate-button-container {
+            margin-top: 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .debate-button {
+            background-color: #226680;
+            border: 3px solid #226680;
+            border-radius: 50px;
+            padding: 0.8rem 2.5rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .debate-button:hover {
+            background-color: #0b3c4d;
+            border: 3px solid #0b3c4d;
+            color: white;
+        }
+        
+        @media (max-width: 900px) {
+            .main {
+                flex-direction: column;
+                text-align: center;
+            }
+            .post-image img {
+                margin-top: 36px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" onclick="window.location.href='home.html'" />
+        <div class="nav-links">
+            <a href="chat.html">Chat</a>
+            <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+            <div class="dropdown" id="perfilDropdown">
+                <h3>👤 Perfil do Professor</h3>
+                <p><strong>Nome:</strong> João da Silva</p>
+                <p><strong>E-mail:</strong> joao.professor@escola.com</p>
+                <p><strong>Código:</strong> ABC123</p>
+                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="main">
+        <div class="post-text">
+            <h2>Maria Eduarda</h2>
+            <p class="post-date">27 de Maio de 2025</p>
+            <p class="post-description">
+                Gosto de visitar a praça perto de casa, onde posso brincar, ler e conversar com amigos. É um espaço que me faz sentir em paz. Quando chego lá, parece que o tempo desacelera. O som dos pássaros, o vento balançando as folhas das árvores e o cheiro da grama
+                fresca me fazem esquecer qualquer preocupação. Às vezes levo um lanche e passo horas observando o movimento ao redor, vendo crianças sorrindo, famílias se encontrando e senhores jogando conversa fora nos bancos. É ali que encontro tranquilidade
+                e alegria nas coisas mais simples da vida.
+            </p>
+        </div>
+        <div class="post-image">
+            <img src="../images/exempo1.jpg" alt="Cena de protesto no Haiti" />
+            <div class="debate-button-container">
+                <button class="debate-button">Debater</button>
+
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        const perfilBtn = document.getElementById("perfilBtn");
+        const perfilDropdown = document.getElementById("perfilDropdown");
+
+        perfilBtn.addEventListener("click", () => {
+            perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
+        });
+
+        window.addEventListener("click", function(e) {
+            if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+                perfilDropdown.style.display = "none";
+            }
+        });
+    </script>
+
+</body>
+
+</html>
