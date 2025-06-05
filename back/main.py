@@ -267,6 +267,27 @@ def login(usuario: LoginRequest):
     raise HTTPException(status_code=401, detail="Email ou senha inválidos.")
 
 
+@app.get("/alunos/{codigo_sala}")
+def listar_alunos_por_sala(codigo_sala: str):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT nome, email
+            FROM usuarios
+            WHERE sala = ? AND cargo = 'aluno'
+            ORDER BY nome
+        """, (codigo_sala,))
+        
+        alunos = cursor.fetchall()
+
+    return [
+        {"nome": nome, "email": email}
+        for nome, email in alunos
+    ]
+
+
+
 # Rota: Criar publicação
 @app.post("/publicar")
 async def publicar(

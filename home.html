@@ -323,9 +323,10 @@
             <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
             <div class="dropdown" id="perfilDropdown">
                 <h3>👤 Perfil do Professor</h3>
-                <p><strong>Nome:</strong> João da Silva</p>
-                <p><strong>E-mail:</strong> joao.professor@escola.com</p>
-                <p><strong>Código:</strong> ABC123</p>
+                    <p><strong>Nome:</strong> <span id="perfilNome">Carregando...</span></p>
+                    <p><strong>E-mail:</strong> <span id="perfilEmail">Carregando...</span></p>
+                    <p><strong>Código:</strong> <span id="perfilCodigo">Carregando...</span></p>
+
                 <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
             </div>
         </div>
@@ -344,83 +345,18 @@
     <script>
         const perfilBtn = document.getElementById("perfilBtn");
         const perfilDropdown = document.getElementById("perfilDropdown");
-
     
-        document.addEventListener("DOMContentLoaded", () => {
-            const nomeUsuario = localStorage.getItem("nome");
-            if (nomeUsuario) {
-                document.getElementById("nomeUsuario").textContent = nomeUsuario;
-            }
-        });
-
-
-
         perfilBtn.addEventListener("click", () => {
             const isVisible = perfilDropdown.style.display === "block";
             perfilDropdown.style.display = isVisible ? "none" : "block";
         });
-
+    
         window.addEventListener("click", function(e) {
             if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
                 perfilDropdown.style.display = "none";
             }
         });
-
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const codigoSala = localStorage.getItem("codigo_sala");
-            if (codigoSala) {
-                fetch(`http://localhost:8000/publicacoes/${codigoSala}`)
-                    .then(response => response.json())
-                    .then(publicacoes => {
-                        const mural = document.getElementById("todasRedacoesMural");
-                        publicacoes.forEach(pub => {
-                            const card = criarCard(pub);
-                            mural.innerHTML += card;
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Erro ao carregar publicações:", error);
-                    });
-            }
-        });
-
-
-
-        const redacoes = [{
-            tipo: "📝 Tema",
-            titulo: "Meu Lugar Favorito",
-            autor: "Maria Eduarda",
-            data: "27 de Maio de 2025",
-            texto: "Gosto de visitar a praça perto de casa, onde posso brincar, ler e conversar com amigos. É um espaço que me faz sentir em paz.",
-            imagem: "images/exempo1.jpg",
-            nota: "8/10"
-        }, {
-            tipo: "🎧 Podcast",
-            titulo: "O som da minha cidade",
-            autor: "Lucas Oliveira",
-            data: "25 de Maio de 2025",
-            texto: "Gravei um podcast sobre os sons que mais escuto: o apito do trem, os cachorros e a feira de domingo. Um retrato sonoro da minha comunidade.",
-            imagem: "images/exempo2.jpg",
-            nota: "7/10"
-        }, {
-            tipo: "📝 Tema",
-            titulo: "A importância da leitura",
-            autor: "Maria Eduarda",
-            data: "24 de Maio de 2025",
-            texto: "Falei sobre como a leitura desenvolve o pensamento crítico e amplia o vocabulário. É um hábito que muda vidas!",
-            imagem: "images/minha1.jpg",
-            nota: "9/10"
-        }, {
-            tipo: "📷 Fotografia",
-            titulo: "Olhares para o céu",
-            autor: "Maria Eduarda",
-            data: "22 de Maio de 2025",
-            texto: "Capturei esse pôr do sol no campo. As cores do céu representam a beleza da natureza ao nosso redor.",
-            imagem: "images/minha2.jpg",
-            nota: "5/10"
-        }];
-
+    
         function criarCard(pub) {
             return `
                 <div class="card">
@@ -435,40 +371,71 @@
                 </div>
             `;
         }
-
-
-    document.getElementById("todasRedacoesMural").innerHTML = redacoes.map(r => criarCard(r, true)).join('');
-
-    const alunos = [
-      { id: "a1", nome: "Maria Eduarda", foto: "images/perfil1.png" },
-      { id: "a2", nome: "Lucas Oliveira", foto: "images/perfil2.png" },
-      { id: "a3", nome: "Ana Beatriz", foto: "images/perfil3.jpg" },
-      { id: "a4", nome: "João Pedro", foto: "images/perfil4.png" },
-      { id: "a5", nome: "Laura Souza", foto: "images/perfil5.jpg" }
-    ];
-
-    const alunosList = document.getElementById("alunosList");
-    alunos.forEach((aluno) => {
-      const card = document.createElement("div");
-      card.className = "aluno-card";
-      card.innerHTML = `
-        <img src="${aluno.foto}" alt="Foto do aluno ${aluno.nome}" />
-        <div class="aluno-nome">${aluno.nome}</div>
-        <button class="btn-msg" onclick="abrirChat('${aluno.nome}')">Enviar mensagem</button>
-      `;
-      alunosList.appendChild(card);
-    });
-
-    function abrirChat(nomeAluno) {
-      const url = new URL(window.location.origin + "/chat.html");
-      url.searchParams.set("aluno", nomeAluno);
-      window.location.href = url.toString();
-    }
-
-    function avaliarRedacao(id) {
-      alert(`Avaliar redação: ${id}`);
-    }
+    
+        function abrirChat(nomeAluno) {
+            const url = new URL(window.location.origin + "/chat.html");
+            url.searchParams.set("aluno", nomeAluno);
+            window.location.href = url.toString();
+        }
+    
+        function avaliarRedacao(id) {
+            alert(`Avaliar redação: ${id}`);
+        }
+    
+        document.addEventListener("DOMContentLoaded", () => {
+            const nome = localStorage.getItem("nome");
+            const email = localStorage.getItem("email");
+            const codigoSala = localStorage.getItem("codigo_sala");
+        
+            if (nome) document.getElementById("perfilNome").textContent = nome;
+            if (email) document.getElementById("perfilEmail").textContent = email;
+            if (codigoSala) document.getElementById("perfilCodigo").textContent = codigoSala;
+        
+            if (codigoSala) {
+                // 🔹 Carregar redações
+                fetch(`http://localhost:8000/publicacoes/${codigoSala}`)
+                    .then(response => response.json())
+                    .then(publicacoes => {
+                        const mural = document.getElementById("todasRedacoesMural");
+                        mural.innerHTML = "";
+                        publicacoes.forEach(pub => {
+                            const card = criarCard(pub);
+                            mural.innerHTML += card;
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Erro ao carregar publicações:", error);
+                    });
+                
+                // 🔹 Carregar alunos
+                fetch(`http://localhost:8000/alunos/${codigoSala}`)
+                    .then(response => response.json())
+                    .then(alunos => {
+                        const alunosList = document.getElementById("alunosList");
+                        alunosList.innerHTML = "";
+                    
+                        alunos.forEach((aluno, index) => {
+                            const imagem = `images/perfil${(index % 5) + 1}.png`;
+                            const card = document.createElement("div");
+                            card.className = "aluno-card";
+                            card.innerHTML = `
+                                <img src="${imagem}" alt="Foto do aluno ${aluno.nome}" />
+                                <div class="aluno-nome">${aluno.nome}</div>
+                                <p style="font-size: 13px; color: #666; margin: 6px 0;">${aluno.email}</p>
+                                <button class="btn-msg" onclick="abrirChat('${aluno.nome}')">Enviar mensagem</button>
+                            `;
+                            alunosList.appendChild(card);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Erro ao carregar alunos:", error);
+                    });
+            } else {
+                console.warn("Código da sala não encontrado no localStorage.");
+            }
+        });
     </script>
+
 
 </body>
 
