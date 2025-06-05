@@ -260,9 +260,10 @@
 
             <div class="dropdown" id="perfilDropdown">
                 <h3>👤 Meu Perfil</h3>
-                <p><strong>Nome:</strong> Maria Eduarda</p>
-                <p><strong>E-mail:</strong> maria.eduarda@escola.com</p>
-                <p><strong>Turma:</strong> 9º A</p>
+                <p><strong>Nome:</strong> <span id="perfilNome">carregando...</span></p>
+                <p><strong>E-mail:</strong> <span id="perfilEmail">carregando...</span></p>
+                <p><strong>Turma:</strong> <span id="perfilSala">carregando...</span></p>
+
                 <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
             </div>
 
@@ -277,81 +278,14 @@
     <div class="container">
         <h1>📝 Produções da Turma</h1>
 
-        <div class="mural">
-            <div class="card">
-                <img src="images/exempo1.jpg" alt="Meu Lugar Favorito">
-                <div class="card-content">
-                    <span class="tag">📝 Tema</span>
-                    <h3>Meu Lugar Favorito</h3>
-                    <div class="autor">por Maria Eduarda</div>
-                    <div class="data">27 de Maio de 2025</div>
-                    <p>Gosto de visitar a praça perto de casa, onde posso brincar, ler e conversar com amigos. É um espaço que me faz sentir em paz.</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <img src="images/exempo2.jpg" alt="Podcast Som da Cidade">
-                <div class="card-content">
-                    <span class="tag">🎧 Podcast</span>
-                    <h3>O som da minha cidade</h3>
-                    <div class="autor">por Lucas Oliveira</div>
-                    <div class="data">25 de Maio de 2025</div>
-                    <p>Gravei um podcast sobre os sons que mais escuto: o apito do trem, os cachorros e a feira de domingo. Um retrato sonoro da minha comunidade.</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <img src="images/minha1.jpg" alt="Tema: Educação">
-                <div class="card-content">
-                    <span class="tag">📝 Tema </span>
-
-                    <h3>A importância da leitura</h3>
-                    <div class="autor">por Maria Eduarda</div>
-                    <div class="data">24 de Maio de 2025</div>
-                    <p>Falei sobre como a leitura desenvolve o pensamento crítico e amplia o vocabulário. É um hábito que muda vidas!</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <img src="images/minha2.jpg" alt="Fotografia: Céu">
-                <div class="card-content">
-                    <span class="tag">📷 Fotografia</span>
-                    <h3>Olhares para o céu</h3>
-                    <div class="autor">por Maria Eduarda</div>
-                    <div class="data">22 de Maio de 2025</div>
-                    <p>Capturei esse pôr do sol no campo. As cores do céu representam a beleza da natureza ao nosso redor.</p>
-                </div>
-            </div>
-
-
+        <div class="mural" id="muralTurma">
+            <!-- Cards da turma serão inseridos aqui dinamicamente -->
         </div>
 
         <h1 style="margin-top: 60px;">📚 Minhas Produções</h1>
 
-        <div class="mural">
-            <div class="card">
-                <img src="images/minha1.jpg" alt="Tema: Educação">
-                <div class="card-content">
-                    <span class="tag">📝 Tema</span>
-                    <span class="nota">Nota: 5/10</span>
-                    <h3>A importância da leitura</h3>
-                    <div class="autor">por Maria Eduarda</div>
-                    <div class="data">24 de Maio de 2025</div>
-                    <p>Falei sobre como a leitura desenvolve o pensamento crítico e amplia o vocabulário. É um hábito que muda vidas!</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <img src="images/minha2.jpg" alt="Fotografia: Céu">
-                <div class="card-content">
-                    <span class="tag">📷 Fotografia</span>
-                    <span class="nota">Nota: 6/10</span>
-                    <h3>Olhares para o céu</h3>
-                    <div class="autor">por Maria Eduarda</div>
-                    <div class="data">22 de Maio de 2025</div>
-                    <p>Capturei esse pôr do sol no campo. As cores do céu representam a beleza da natureza ao nosso redor.</p>
-                </div>
-            </div>
+        <div class="mural" id="muralMinhas">
+            <!-- Cards das minhas produções serão inseridos aqui dinamicamente -->
         </div>
     </div>
 
@@ -360,6 +294,16 @@
         const perfilDropdown = document.getElementById("perfilDropdown");
         const produzirBtn = document.getElementById("produzirBtn");
         const produzirDropdown = document.getElementById("produzirDropdown");
+
+        // Obter dados do localStorage
+        const nomeUsuario = localStorage.getItem("nome");
+        const emailUsuario = localStorage.getItem("email"); // caso precise
+        const sala = localStorage.getItem("codigo_sala");
+
+        // Preencher dropdown do perfil
+        document.getElementById("perfilNome").textContent = nomeUsuario || "Nome não disponível";
+        document.getElementById("perfilEmail").textContent = emailUsuario || "Email não disponível";
+        document.getElementById("perfilSala").textContent = sala || "Sala não disponível";
 
         perfilBtn.addEventListener("click", () => {
             const isVisible = perfilDropdown.style.display === "block";
@@ -381,8 +325,92 @@
                 produzirDropdown.style.display = "none";
             }
         });
+
+        async function carregarProducoes() {
+            if (!sala) {
+                console.error("Código da sala não encontrado.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/publicacoes/${encodeURIComponent(sala)}`);
+                if (!res.ok) throw new Error("Erro ao buscar produções");
+
+                const producoes = await res.json();
+
+                const muralTurma = document.querySelectorAll(".container .mural")[0]; // Produções da Turma
+                const muralMinhas = document.querySelectorAll(".container .mural")[1]; // Minhas Produções
+
+                muralTurma.innerHTML = "";
+                muralMinhas.innerHTML = "";
+
+                producoes.forEach(producao => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+
+                    const img = document.createElement("img");
+                    img.src = `images/${producao.imagem}`;
+                    img.alt = producao.titulo;
+
+                    const cardContent = document.createElement("div");
+                    cardContent.className = "card-content";
+
+                    // Tag + ícone pelo tipo
+                    let tagTexto = "";
+                    if (producao.tipo === "tema") tagTexto = "📝 Tema";
+                    else if (producao.tipo === "podcast") tagTexto = "🎧 Podcast";
+                    else if (producao.tipo === "fotografia") tagTexto = "📷 Fotografia";
+
+                    const tag = document.createElement("span");
+                    tag.className = "tag";
+                    tag.textContent = tagTexto;
+
+                    const titulo = document.createElement("h3");
+                    titulo.textContent = producao.titulo;
+
+                    const autor = document.createElement("div");
+                    autor.className = "autor";
+                    autor.textContent = `por ${producao.aluno}`;
+
+                    const data = document.createElement("div");
+                    data.className = "data";
+                    const dataFormatada = new Date(producao.data_criacao).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric"
+                    });
+                    data.textContent = dataFormatada;
+
+                    const descricao = document.createElement("p");
+                    descricao.textContent = producao.conteudo;
+
+                    cardContent.appendChild(tag);
+                    cardContent.appendChild(titulo);
+                    cardContent.appendChild(autor);
+                    cardContent.appendChild(data);
+                    cardContent.appendChild(descricao);
+
+                    card.appendChild(img);
+                    card.appendChild(cardContent);
+
+                    // Sempre adiciona na turma
+                    muralTurma.appendChild(card);
+
+                    // Se o autor é o usuário (compara nome do aluno)
+                    if (producao.aluno === nomeUsuario) {
+                        // Clona o card para não remover da turma
+                        const cardClone = card.cloneNode(true);
+                        muralMinhas.appendChild(cardClone);
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao carregar produções:", error);
+            }
+        }
+
+        // Executa ao carregar a página
+        carregarProducoes();
     </script>
 
 </body>
-
 </html>

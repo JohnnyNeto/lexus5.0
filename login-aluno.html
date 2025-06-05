@@ -208,151 +208,144 @@
     </div>
 
     <script>
-        // Mostrar seção do código
-        document.getElementById("mostrarCodigo").addEventListener("click", () => {
-            document.getElementById("codigoSection").style.display = "block";
+        // Seletores principais
+        const texto = document.getElementById("textoRedacao");
+        const contador = document.getElementById("contadorPalavras");
+        const uploadInput = document.getElementById("upload");
+        const temaInput = document.querySelector("input[type='text']");
+        const perfilBtn = document.getElementById("perfilBtn");
+        const perfilDropdown = document.getElementById("perfilDropdown");
+        const produzirBtn = document.getElementById("produzirBtn");
+        const produzirDropdown = document.getElementById("produzirDropdown");
+
+        // Atualiza contador de palavras conforme o usuário digita
+        texto.addEventListener("input", () => {
+            const palavras = texto.value.trim().split(/\s+/).filter(p => p !== "");
+            contador.textContent = `${palavras.length} palavra${palavras.length !== 1 ? 's' : ''}`;
         });
 
-        // Seletores de campos
-        const nomeUsuarioInput = document.getElementById("nomeUsuario");
-        const emailCadastroInput = document.getElementById("emailCadastro");
-        const codigoInput = document.getElementById("codigo");
-        const senhaCadastroInput = document.createElement("input");
-        senhaCadastroInput.type = "password";
-        senhaCadastroInput.placeholder = "Digite sua senha";
-        senhaCadastroInput.id = "senhaCadastro";
-        senhaCadastroInput.required = true;
-
-        codigoInput.parentNode.insertBefore(
-            senhaCadastroInput,
-            codigoInput.nextSibling
-        );
-
-        const botaoCadastrar = document.getElementById("botaoCadastrar");
-        const emailLoginInput = document.getElementById("email");
-        const botaoLogin = document.querySelector("button");
-
-        const senhaLoginInput = document.createElement("input");
-        senhaLoginInput.type = "password";
-        senhaLoginInput.placeholder = "Digite sua senha";
-        senhaLoginInput.id = "senhaLogin";
-        senhaLoginInput.required = true;
-
-        emailLoginInput.parentNode.insertBefore(
-            senhaLoginInput,
-            botaoLogin
-        );
-
-        function validarCamposCadastro() {
-            if (
-                nomeUsuarioInput.value.trim() !== "" &&
-                emailCadastroInput.value.trim() !== "" &&
-                codigoInput.value.trim() !== "" &&
-                senhaCadastroInput.value.trim().length >= 6
-            ) {
-                botaoCadastrar.disabled = false;
-                botaoCadastrar.classList.remove("disabled-button");
-                botaoCadastrar.classList.add("enabled-button");
+        // Mostrar preview da imagem enviada
+        function mostrarPreview(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById("preview");
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = "block";
+                }
+                reader.readAsDataURL(file);
             } else {
-                botaoCadastrar.disabled = true;
-                botaoCadastrar.classList.remove("enabled-button");
-                botaoCadastrar.classList.add("disabled-button");
+                preview.style.display = "none";
             }
         }
 
-        nomeUsuarioInput.addEventListener("input", validarCamposCadastro);
-        emailCadastroInput.addEventListener("input", validarCamposCadastro);
-        codigoInput.addEventListener("input", validarCamposCadastro);
-        senhaCadastroInput.addEventListener("input", validarCamposCadastro);
+        // Carregar dados do usuário do localStorage e atualizar dropdown do perfil
+        function carregarDadosUsuario() {
+            const nome = localStorage.getItem("nome") || "Usuário";
+            const email = localStorage.getItem("email") || "email@exemplo.com";
+            const codigoSala = localStorage.getItem("codigo_sala") || "Turma";
 
-        // Botão de cadastro com código
-        botaoCadastrar.addEventListener("click", async function () {
-            const sucesso = document.getElementById("mensagemSucesso");
-            const erro = document.getElementById("mensagemErro");
+            perfilDropdown.innerHTML = `
+                <h3>👤 Meu Perfil</h3>
+                <p><strong>Nome:</strong> ${nome}</p>
+                <p><strong>E-mail:</strong> ${email}</p>
+                <p><strong>Turma:</strong> ${codigoSala}</p>
+                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+            `;
+        }
 
-            sucesso.style.display = "none";
-            erro.style.display = "none";
+        // Atualiza perfil ao carregar página
+        carregarDadosUsuario();
 
-            try {
-                const response = await fetch("http://localhost:8000/cadastrar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        nome: nomeUsuarioInput.value.trim(),
-                        email: emailCadastroInput.value.trim(),
-                        senha: senhaCadastroInput.value.trim(),
-                        cargo: "aluno",
-                        sala: codigoInput.value.trim()
-                    })
-                });
+        // Toggle dropdown perfil ao clicar na foto do perfil
+        perfilBtn.addEventListener("click", () => {
+            const isVisible = perfilDropdown.style.display === "block";
+            perfilDropdown.style.display = isVisible ? "none" : "block";
+            produzirDropdown.style.display = "none";
+        });
 
-                const data = await response.json();
+        // Toggle dropdown produção ao clicar no botão Produzir
+        produzirBtn.addEventListener("click", () => {
+            const isVisible = produzirDropdown.style.display === "block";
+            produzirDropdown.style.display = isVisible ? "none" : "block";
+            perfilDropdown.style.display = "none";
+        });
 
-                if (!response.ok) {
-                    throw new Error(data.detail || "Erro desconhecido");
-                }
-
-                localStorage.setItem("email", emailCadastroInput.value.trim());
-                localStorage.setItem("codigo_sala", codigoInput.value.trim());
-
-                sucesso.style.display = "block";
-
-                setTimeout(() => {
-                    window.location.href = "home-aluno.html";
-                }, 1500);
-            } catch (e) {
-                erro.textContent = `❌ ${e.message}`;
-                erro.style.display = "block";
+        // Fecha dropdowns se clicar fora deles
+        window.addEventListener("click", (e) => {
+            if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+                perfilDropdown.style.display = "none";
+            }
+            if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
+                produzirDropdown.style.display = "none";
             }
         });
 
-        // Login
-        emailLoginInput.addEventListener("input", validarCamposLogin);
-        senhaLoginInput.addEventListener("input", validarCamposLogin);
+        // Função para enviar a redação com dados do localStorage
+        async function enviarRedacao() {
+            const emailAluno = localStorage.getItem("email");
+            const codigoSala = localStorage.getItem("codigo_sala");
+            const tipo = "fotografia";
+            const titulo = temaInput.value.trim();
+            const conteudo = texto.value.trim();
 
-        function validarCamposLogin() {
-            if (emailLoginInput.value.trim() !== "" && senhaLoginInput.value.trim() !== "") {
-                botaoLogin.disabled = false;
-                botaoLogin.classList.remove("disabled-button");
-                botaoLogin.classList.add("enabled-button");
-            } else {
-                botaoLogin.disabled = true;
-                botaoLogin.classList.remove("enabled-button");
-                botaoLogin.classList.add("disabled-button");
+            if (!emailAluno) {
+                alert("Usuário não autenticado. Por favor, faça login.");
+                return;
             }
-        }
 
-        botaoLogin.addEventListener("click", async () => {
+            if (conteudo.length === 0) {
+                alert("Por favor, digite o texto da redação.");
+                texto.focus();
+                return;
+            }
+            if (!uploadInput.files[0]) {
+                alert("Por favor, faça o upload de uma imagem.");
+                uploadInput.focus();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("email_aluno", emailAluno);
+            formData.append("codigo_sala", codigoSala);
+            formData.append("tipo", tipo);
+            formData.append("titulo", titulo);
+            formData.append("conteudo", conteudo);
+            formData.append("imagem", uploadInput.files[0]);
+
             try {
-                const response = await fetch("http://localhost:8000/login", {
+                const response = await fetch("http://127.0.0.1:8000/publicar", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: emailLoginInput.value.trim(),
-                        senha: senhaLoginInput.value.trim()
-                    })
+                    body: formData,
                 });
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    throw new Error(data.detail || "Erro ao logar.");
-                }
-
-                if (data.cargo !== "aluno") {
-                    alert("Apenas alunos podem fazer login aqui.");
+                    const errorData = await response.json();
+                    alert("Erro ao enviar publicação: " + (errorData.detail || response.statusText));
                     return;
                 }
 
-                localStorage.setItem("nome", data.nome);
-                localStorage.setItem("email", data.email);
-                localStorage.setItem("codigo_sala", data.codigo_sala);
+                const data = await response.json();
+                alert(data.mensagem);
 
-                window.location.href = "home-aluno.html";
-            } catch (e) {
-                alert(`❌ ${e.message}`);
+                // Resetar campos após envio
+                temaInput.value = "";
+                texto.value = "";
+                contador.textContent = "0 palavras";
+                uploadInput.value = "";
+                document.getElementById("preview").style.display = "none";
+
+            } catch (error) {
+                alert("Erro na comunicação com o servidor: " + error.message);
             }
-        });
+        }
+
+        // Expor a função para onclick do botão enviar no HTML
+        window.enviarRedacao = enviarRedacao;
+
+        // Expor a função para o onchange do input file
+        window.mostrarPreview = mostrarPreview;
     </script>
 </body>
 </html>
