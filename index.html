@@ -1,384 +1,375 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lexus - Plataforma de Português Instrumental</title>
-  <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f9fafb;
-      color: #2c3e50;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    header {
-      background-color: #226680;
-      padding: 18px 50px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .logo {
-      max-height: 60px;
-      object-fit: contain;
-      transform: scale(1.4);
-      transform-origin: left center;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-    .logo:hover {
-      transform: scale(1.5);
-    }
-
-    nav a {
-      margin-left: 24px;
-      font-weight: 600;
-      font-size: 19px;
-      text-decoration: none;
-      color: #000000;
-      letter-spacing: 0.02em;
-      transition: color 0.25s ease;
-    }
-
-    nav a:hover {
-      color: #0febeb;
-    }
-
-    .auth-buttons {
-      display: flex;
-      gap: 12px;
-    }
-
-    .auth-buttons .btn {
-      background-color: #0076CC;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 15px;
-      padding: 10px 20px;
-      border-radius: 28px;
-      box-shadow: 0 4px 12px rgb(75 0 130 / 0.3);
-      text-decoration: none;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .auth-buttons .btn:hover {
-      background-color:#0076CC;
-      box-shadow: 0 6px 20px rgb(53 0 98 / 0.5);
-    }
-
-    .main {
-      display: flex;
-      justify-content: space-between;
-      padding: 80px 50px;
-      align-items: center;
-      flex-wrap: wrap;
-      background: rgb(255, 255, 255);
-      max-width: 1200px;
-      margin: 40px auto 60px auto;
-      border-radius: 14px;
-      box-shadow: 0 8px 28px rgb(0 0 0 / 0.08);
-    }
-
-    .text-content {
-      max-width: 600px;
-    }
-
-    .text-content h2 {
-      color: #34495e;
-      font-size: 26px;
-      font-weight: 600;
-      margin-bottom: 14px;
-      letter-spacing: 0.03em;
-    }
-
-    .text-content h1 {
-      font-size: 44px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      line-height: 1.2;
-      color: #1a1a1a;
-    }
-
-    .text-content .destaque {
-      color: #226680;
-      font-weight: 900;
-      font-style: italic;
-      letter-spacing: 0.06em;
-    }
-
-    .text-content p {
-      font-size: 19px;
-      margin-bottom: 18px;
-      color: #555555;
-    }
-
-    .text-content p strong {
-      font-weight: 700;
-      color: #333333;
-    }
-
-    .text-content a.btn {
-      display: inline-block;
-      margin-top: 18px;
-      letter-spacing: 0.04em;
-      padding: 14px 32px;
-      font-size: 16px;
-    }
-
-    .image-content img {
-      width: 440px;
-      border-radius: 70px;
-      box-shadow: 0 0 25px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease;
-      cursor: pointer;
-    }
-    .image-content img:hover {
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 900px) {
-      .main {
-        flex-direction: column;
-        text-align: center;
-      }
-      .image-content img {
-        margin-top: 36px;
-        width: 90%;
-      }
-      nav a {
-        margin-left: 16px;
-        font-size: 14px;
-      }
-      header {
-        padding: 15px 25px;
-      }
-    }
-
-    /* Seção "Como funciona" refinada */
-
-    .como-funciona {
-      background: #fff;
-      padding: 70px 50px;
-      max-width: 900px;
-      margin: 0 auto 80px auto;
-      border-radius: 20px;
-      box-shadow: 0 12px 40px rgb(0 0 0 / 0.08);
-      text-align: center;
-    }
-
-    .como-funciona h2 {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 22px;
-      color: #2c3e50;
-      letter-spacing: 0.03em;
-    }
-
-    .como-funciona p {
-      font-size: 20px;
-      color: #4d5a6e;
-      max-width: 720px;
-      margin: 0 auto 30px auto;
-      font-weight: 500;
-      line-height: 1.7;
-    }
-
-    .como-funciona ul {
-      list-style: none;
-      max-width: 650px;
-      margin: 0 auto;
-      padding-left: 0;
-      text-align: left;
-    }
-
-    .como-funciona ul li {
-      background: #f9f9f9;
-      border-left: 5px solid #226680;
-      margin-bottom: 20px;
-      padding: 16px 24px;
-      font-size: 18px;
-      color: #34495e;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-radius: 8px;
-      box-shadow: 0 3px 8px rgb(0 0 0 / 0.05);
-      cursor: default;
-      transition: background-color 0.3s ease;
-    }
-
-    .como-funciona ul li:hover {
-      background-color: #fff3e1;
-    }
-
-    .como-funciona ul li::before {
-      content: "✅";
-      font-size: 22px;
-      color: #226680;
-      display: inline-block;
-      min-width: 28px;
-      text-align: center;
-    }
-
-    /* Seção Impacto - Cards interativos */
-
-    .impacto {
-      background-color: #fff;
-      padding: 80px 50px;
-      max-width: 1100px;
-      margin: auto  auto 80px auto;
-      border-radius: 18px;
-      box-shadow: 0 12px 48px rgb(0 0 0 / 0.1);
-      text-align: center;
-    }
-
-    .impacto h2 {
-      font-size: 34px;
-      font-weight: 700;
-      margin-bottom: 28px;
-      color: #2c3e50;
-      letter-spacing: 0.03em;
-    }
-
-    .impacto .destaque {
-      color: #000000;
-      font-weight: 900;
-      font-style: italic;
-      letter-spacing: 0.07em;
-    }
-
-    .impacto p {
-      font-size: 19px;
-      color: #566374;
-      max-width: 800px;
-      margin: 0 auto 50px auto;
-      line-height: 1.75;
-      font-weight: 500;
-    }
-
-    .cards {
-      display: flex;
-      justify-content: space-around;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-
-    .card {
-      background-color: #f9f9f9;
-      padding: 38px 32px;
-      border-radius: 22px;
-      flex: 1 1 280px;
-      box-shadow: 0 5px 18px rgb(0 0 0 / 0.07);
-      transition: transform 0.35s ease, box-shadow 0.35s ease;
-      cursor: default;
-      user-select: none;
-    }
-
-    .card:hover {
-      transform: translateY(-8px) scale(1.03);
-      box-shadow: 0 12px 32px rgb(0 0 0 / 0.14);
-      background-color: #fff4e5;
-    }
-
-    .card h3 {
-      font-size: 42px;
-      color: #0076CC;
-      margin-bottom: 14px;
-      font-weight: 800;
-    }
-
-    .card p {
-      font-size: 18px;
-      color: #34495e;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lexus - Plataforma de Português Instrumental</title>
+    <style>
+        /* Reset */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #2c3e50;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        header {
+            background-color: #226680;
+            padding: 18px 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            max-height: 28px;
+            object-fit: contain;
+            transform: scale(1.4);
+            transform-origin: left center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.5);
+        }
+        
+        nav a {
+            margin-left: 24px;
+            font-weight: 600;
+            font-size: 19px;
+            text-decoration: none;
+            color: #000000;
+            letter-spacing: 0.02em;
+            transition: color 0.25s ease;
+        }
+        
+        nav a:hover {
+            color: #0febeb;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .auth-buttons .btn {
+            background-color: #0076CC;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 10px 20px;
+            border-radius: 28px;
+            box-shadow: 0 4px 12px rgb(75 0 130 / 0.3);
+            text-decoration: none;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .auth-buttons .btn:hover {
+            background-color: #0076CC;
+            box-shadow: 0 6px 20px rgb(53 0 98 / 0.5);
+        }
+        
+        .main {
+            display: flex;
+            justify-content: space-between;
+            padding: 80px 50px;
+            align-items: center;
+            flex-wrap: wrap;
+            background: rgb(255, 255, 255);
+            max-width: 1200px;
+            width: 100%;
+            margin: 40px auto 60px auto;
+            border-radius: 14px;
+            box-shadow: 0 8px 28px rgb(0 0 0 / 0.08);
+        }
+        
+        .text-content {
+            max-width: 600px;
+        }
+        
+        .text-content h2 {
+            color: #34495e;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            letter-spacing: 0.03em;
+        }
+        
+        .text-content h1 {
+            font-size: 44px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.2;
+            color: #1a1a1a;
+        }
+        
+        .text-content .destaque {
+            color: #226680;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: 0.06em;
+        }
+        
+        .text-content p {
+            font-size: 19px;
+            margin-bottom: 18px;
+            color: #555555;
+        }
+        
+        .text-content p strong {
+            font-weight: 700;
+            color: #333333;
+        }
+        
+        .text-content a.btn {
+            display: inline-block;
+            margin-top: 18px;
+            letter-spacing: 0.04em;
+            padding: 14px 32px;
+            font-size: 16px;
+        }
+        
+        .image-content img {
+            width: 440px;
+            border-radius: 70px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .image-content img:hover {
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 900px) {
+            .main {
+                flex-direction: column;
+                text-align: center;
+            }
+            .image-content img {
+                margin-top: 36px;
+                width: 90%;
+            }
+            nav a {
+                margin-left: 16px;
+                font-size: 14px;
+            }
+            header {
+                padding: 15px 25px;
+            }
+        }
+        
+        .como-funciona {
+            background: #fff;
+            padding: 70px 50px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 40px auto 60px auto;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgb(0 0 0 / 0.08);
+            text-align: center;
+        }
+        
+        .como-funciona h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 22px;
+            color: #2c3e50;
+            letter-spacing: 0.03em;
+        }
+        
+        .como-funciona p {
+            font-size: 20px;
+            color: #4d5a6e;
+            max-width: 720px;
+            margin: 0 auto 30px auto;
+            font-weight: 500;
+            line-height: 1.7;
+        }
+        
+        .como-funciona ul {
+            list-style: none;
+            max-width: 650px;
+            margin: 0 auto;
+            padding-left: 0;
+            text-align: left;
+        }
+        
+        .como-funciona ul li {
+            background: #f9f9f9;
+            border-left: 5px solid #226680;
+            margin-bottom: 20px;
+            padding: 16px 24px;
+            font-size: 18px;
+            color: #34495e;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgb(0 0 0 / 0.05);
+            cursor: default;
+            transition: background-color 0.3s ease;
+        }
+        
+        .como-funciona ul li:hover {
+            background-color: #fff3e1;
+        }
+        
+        .como-funciona ul li::before {
+            content: "✅";
+            font-size: 22px;
+            color: #226680;
+            display: inline-block;
+            min-width: 28px;
+            text-align: center;
+        }
+        
+        .impacto {
+            background-color: #fff;
+            padding: 80px 50px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 40px auto 60px auto;
+            border-radius: 18px;
+            box-shadow: 0 12px 48px rgb(0 0 0 / 0.1);
+            text-align: center;
+        }
+        
+        .impacto h2 {
+            font-size: 34px;
+            font-weight: 700;
+            margin-bottom: 28px;
+            color: #2c3e50;
+            letter-spacing: 0.03em;
+        }
+        
+        .impacto .destaque {
+            color: #000000;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: 0.07em;
+        }
+        
+        .impacto p {
+            font-size: 19px;
+            color: #566374;
+            max-width: 800px;
+            margin: 0 auto 50px auto;
+            line-height: 1.75;
+            font-weight: 500;
+        }
+        
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .card {
+            background-color: #f9f9f9;
+            padding: 38px 32px;
+            border-radius: 22px;
+            flex: 1 1 280px;
+            box-shadow: 0 5px 18px rgb(0 0 0 / 0.07);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+            cursor: default;
+            user-select: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 12px 32px rgb(0 0 0 / 0.14);
+            background-color: #fff4e5;
+        }
+        
+        .card h3 {
+            font-size: 42px;
+            color: #0076CC;
+            margin-bottom: 14px;
+            font-weight: 800;
+        }
+        
+        .card p {
+            font-size: 18px;
+            color: #34495e;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+    </style>
 </head>
+
 <body>
-  <header>
-    <img class="logo" src="images/lexus.png" alt="Logo Lexus" />
-    <nav>
-      
-      
-    </nav>
-    <div class="auth-buttons">
-      <a href="login-aluno.html" class="btn btn-login">Aluno</a>
-      <a href="login-professor.html" class="btn btn-signup">Professor</a>
-    </div>
-  </header>
+    <header>
+        <img class="logo" src="images/lexus.png" alt="Logo Lexus" />
+        <nav></nav>
+        <div class="auth-buttons">
+            <a href="login-aluno.html" class="btn btn-login">Aluno</a>
+            <a href="login-professor.html" class="btn btn-signup">Professor</a>
+        </div>
+    </header>
 
-  <section class="main" aria-label="Apresentação Lexus">
-    <div class="text-content">
-      <h2>Transformar o futuro começa com uma palavra</h2>
-      <h1><span class="destaque">A escrita</span> é a ferramenta para o pensamento crítico e a transformação social.</h1>
-      <p>
-        Na Lexus, valorizamos o poder da palavra como o elo essencial para o conhecimento, a expressão e a mudança.
-        Escrever é organizar ideias, refletir sobre o mundo e participar ativamente da construção de uma sociedade mais justa.
-      </p>
-      <p>
-        Nossa plataforma promove o desenvolvimento da autonomia na escrita, integrando tecnologia de ponta e acompanhamento pedagógico humanizado, dentro e fora da sala de aula.
-      </p>
-      <a href="#" class="btn" aria-label="Saiba mais sobre a Lexus">Saiba mais</a>
-    </div>
-    <div class="image-content">
-      <img src="images/grupo.png" alt="Grupo de estudantes" />
-    </div>
-  </section>
+    <section class="main" aria-label="Apresentação Lexus">
+        <div class="text-content">
+            <h2>Transformar o futuro começa com uma palavra</h2>
+            <h1><span class="destaque">A escrita</span> é a ferramenta para o pensamento crítico e a transformação social.</h1>
+            <p>Na Lexus, valorizamos o poder da palavra como o elo essencial para o conhecimento, a expressão e a mudança. Escrever é organizar ideias, refletir sobre o mundo e participar ativamente da construção de uma sociedade mais justa.</p>
+            <p>Nossa plataforma promove o desenvolvimento da autonomia na escrita, integrando tecnologia de ponta e acompanhamento pedagógico humanizado, dentro e fora da sala de aula.</p>
+        </div>
+        <div class="image-content">
+            <img src="images/grupo.png" alt="Grupo de estudantes" />
+        </div>
+    </section>
 
-  <section class="como-funciona" aria-label="Como funciona a plataforma Lexus">
-    <h2>Como funciona a plataforma Lexus?</h2>
-    <p>
-      A Lexus é uma solução inovadora para a disciplina de Português Instrumental, facilitando a interação entre professores e alunos e promovendo a prática da escrita de forma estruturada e colaborativa.
-    </p>
-    <ul>
-      <li><strong>Criação de salas:</strong> Professores criam ambientes exclusivos para suas turmas, permitindo organização e controle total do processo.</li>
-      <li><strong>Produção de redações:</strong> Alunos escolhem temas, desenvolvem seus textos diretamente na plataforma e enviam para correção.</li>
-      <li><strong>Sistema de chat:</strong> Comunicação instantânea entre alunos e professores para dúvidas, feedbacks e orientações personalizadas.</li>
-      <li><strong>Murais de destaque:</strong> Exposição das melhores redações produzidas, incentivando o aprendizado e o reconhecimento do esforço.</li>
-      <li><strong>Avaliações e correções:</strong> Professores corrigem e comentam as redações, acompanhando o progresso de cada aluno.</li>
-    </ul>
-    <div style="text-align:center; margin-top: 40px;">
-      <img src="images/sorrindo.png" alt="Pessoa sorrindo" style="width: 300px; border-radius: 20px; box-shadow: 0 6px 18px rgba(0,0,0,0.12);" />
-    </div>
-  </section>
+    <section class="como-funciona" aria-label="Como funciona a plataforma Lexus">
+        <h2>Como funciona a plataforma Lexus?</h2>
+        <p>A Lexus é uma solução inovadora para a disciplina de Português Instrumental, facilitando a interação entre professores e alunos e promovendo a prática da escrita de forma estruturada e colaborativa.</p>
+        <ul>
+            <li><strong>Criação de salas:</strong> Professores criam ambientes exclusivos para suas turmas, permitindo organização e controle total do processo.</li>
+            <li><strong>Produção de redações:</strong> Alunos escolhem temas, desenvolvem seus textos diretamente na plataforma e enviam para correção.</li>
+            <li><strong>Sistema de chat:</strong> Comunicação instantânea entre alunos e professores para dúvidas, feedbacks e orientações personalizadas.</li>
+            <li><strong>Murais de destaque:</strong> Exposição das melhores redações produzidas, incentivando o aprendizado e o reconhecimento do esforço.</li>
+            <li><strong>Avaliações e correções:</strong> Professores corrigem e comentam as redações, acompanhando o progresso de cada aluno.</li>
+        </ul>
+        <div style="text-align:center; margin-top: 40px;">
+            <img src="images/sorrindo.png" alt="Pessoa sorrindo" style="width: 300px; border-radius: 20px; box-shadow: 0 6px 18px rgba(0,0,0,0.12);" />
+        </div>
+    </section>
 
-  <section class="impacto" aria-label="Benefícios da Lexus">
-    <h2>Por que escolher a <span class="destaque">Lexus</span>?</h2>
-    <p>
-      Nossa plataforma é projetada para potencializar habilidades de escrita, estimular a criatividade e facilitar o acompanhamento pedagógico com recursos modernos e acessíveis.
-    </p>
-    <div class="cards">
-      <div class="card" role="article" aria-label="Interatividade e Colaboração">
-        <h3>🤝</h3>
-        <p><strong>Interatividade e colaboração:</strong> Ambiente dinâmico onde alunos e professores trocam ideias e constroem conhecimento juntos.</p>
-      </div>
-      <div class="card" role="article" aria-label="Acesso facilitado">
-        <h3>🌐</h3>
-        <p><strong>Acesso facilitado:</strong> Plataforma responsiva e intuitiva, acessível em qualquer dispositivo, a qualquer hora.</p>
-      </div>
-      <div class="card" role="article" aria-label="Reconhecimento e motivação">
-        <h3>🏆</h3>
-        <p><strong>Reconhecimento e motivação:</strong> Murais com as melhores redações, promovendo incentivo e valorização dos esforços dos alunos.</p>
-      </div>
-    </div>
-  </section>
+    <section class="impacto" aria-label="Benefícios da Lexus">
+        <h2>Por que escolher a <span class="destaque">Lexus</span>?</h2>
+        <p>Nossa plataforma é projetada para potencializar habilidades de escrita, estimular a criatividade e facilitar o acompanhamento pedagógico com recursos modernos e acessíveis.</p>
+        <div class="cards">
+            <div class="card" role="article" aria-label="Interatividade e Colaboração">
+                <h3>🤝</h3>
+                <p><strong>Interatividade e colaboração:</strong> Ambiente dinâmico onde alunos e professores trocam ideias e constroem conhecimento juntos.</p>
+            </div>
+            <div class="card" role="article" aria-label="Acesso facilitado">
+                <h3>🌐</h3>
+                <p><strong>Acesso facilitado:</strong> Plataforma responsiva e intuitiva, acessível em qualquer dispositivo, a qualquer hora.</p>
+            </div>
+            <div class="card" role="article" aria-label="Reconhecimento e motivação">
+                <h3>🏆</h3>
+                <p><strong>Reconhecimento e motivação:</strong> Murais com as melhores redações, promovendo incentivo e valorização dos esforços dos alunos.</p>
+            </div>
+        </div>
+    </section>
 </body>
+
 </html>

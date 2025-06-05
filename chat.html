@@ -1,550 +1,511 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chat - Lexus</title>
-  <style>
-    /* Reset básico */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body, html {
-      height: 100%;
-      background-color: #f4f4f4;
-      color: #333;
-    }
-
-    /* Navbar Lexus padrão do seu projeto */
-    .navbar {
-      background-color: #226680;
-      padding: 5px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .navbar .logo {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      text-decoration: none;
-      color: white;
-      font-size: 22px;
-      font-weight: 700;
-      gap: 10px;
-    }
-
-    .navbar .logo img {
-      height: 90px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .nav-links a:hover {
-      background-color: #164253;
-    }
-
-    /* Dropdown perfil */
-    .perfil-foto {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid white;
-  transition: transform 0.3s;
-}
-
-.perfil-foto:hover {
-  transform: scale(1.05);
-}
-
-.sair-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 10px;
-  width: 100%;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 15px;
-  transition: background 0.3s;
-}
-
-.sair-btn:hover {
-  background-color: #c0392b;
-}
-
-
-    /* Botão Chat extra */
-    .btn-chat {
-      background-color: #1B4F72;
-      border: none;
-      color: white;
-      padding: 8px 15px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s;
-    }
-
-    .btn-chat:hover {
-      background-color: #1B4F72;
-    }
-
-    /* Container geral do chat */
-    .chat-container {
-      display: flex;
-      height: calc(100vh - 70px);
-      /* subtraindo navbar */
-      background-color: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      margin: 20px;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    /* Lateral esquerda: contatos/salas */
-    .chat-sidebar {
-      width: 320px;
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-      background-color: #fafafa;
-    }
-
-    .sidebar-header {
-      padding: 20px;
-      font-weight: 700;
-      font-size: 20px;
-      color: #1B4F72;
-      border-bottom: 1px solid #ddd;
-      user-select: none;
-    }
-
-    .contact-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px 0;
-    }
-
-    .contact {
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .contact:hover, .contact.active {
-      background-color: #1B4F72;
-      color: white;
-    }
-
-    .contact img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 15px;
-      border: 2px solid transparent;
-      transition: border-color 0.2s;
-    }
-
-    .contact.active img {
-      border-color: white;
-    }
-
-    .contact-info {
-      flex: 1;
-    }
-
-    .contact-name {
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    .contact-last-message {
-      font-size: 14px;
-      color: #666;
-      margin-top: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Área principal do chat */
-    .chat-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: #fff;
-    }
-
-    .chat-header {
-      padding: 20px;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      background-color: #1B4F72;
-      color: white;
-      user-select: none;
-    }
-
-    .chat-header img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid white;
-    }
-
-    .chat-header .chat-contact-name {
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #f9f9fb;
-    }
-
-    .message {
-      max-width: 70%;
-      margin-bottom: 15px;
-      padding: 12px 18px;
-      border-radius: 20px;
-      font-size: 15px;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-
-    .message.sent {
-      background-color: #1B4F72;
-      color: white;
-      margin-left: auto;
-      border-bottom-right-radius: 4px;
-    }
-
-    .message.received {
-      background-color: #e3e3f1;
-      color: #333;
-      margin-right: auto;
-      border-bottom-left-radius: 4px;
-    }
-
-    .chat-input {
-      padding: 15px 20px;
-      border-top: 1px solid #ddd;
-      display: flex;
-      gap: 15px;
-      background-color: #fafafa;
-    }
-
-    .chat-input textarea {
-      flex: 1;
-      resize: none;
-      padding: 12px 15px;
-      font-size: 16px;
-      border-radius: 25px;
-      border: 1.5px solid #1B4F72;
-      outline: none;
-      transition: border-color 0.3s;
-      min-height: 45px;
-      max-height: 120px;
-    }
-
-    .chat-input textarea:focus {
-      border-color: #226680;
-    }
-
-    .btn-send {
-      background-color: #226680;
-      border: none;
-      color: white;
-      font-weight: 700;
-      padding: 0 22px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s;
-    }
-
-    .btn-send:disabled {
-      background-color: #226680;
-      cursor: not-allowed;
-    }
-
-    .btn-send:hover:not(:disabled) {
-      background-color: #114153;
-    }
-
-    /* Scroll personalizado */
-    .contact-list::-webkit-scrollbar,
-    .chat-messages::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .contact-list::-webkit-scrollbar-thumb,
-    .chat-messages::-webkit-scrollbar-thumb {
-      background-color: #1B4F72(60, 42, 124, 0.5);
-      border-radius: 4px;
-    }
-
-    @media (max-width: 768px) {
-      .chat-container {
-        flex-direction: column;
-        height: auto;
-        margin: 10px;
-      }
-
-      .chat-sidebar {
-        width: 100%;
-        height: 160px;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-        overflow-x: auto;
-        display: flex;
-      }
-
-      .contact {
-        flex-direction: column;
-        align-items: center;
-        min-width: 120px;
-        padding: 10px;
-      }
-
-      .contact-name {
-        font-size: 14px;
-      }
-
-      .contact-last-message {
-        display: none;
-      }
-
-      .chat-main {
-        height: 70vh;
-      }
-
-      .chat-messages {
-        padding: 10px;
-      }
-
-      .chat-input textarea {
-        min-height: 40px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat - Lexus</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body,
+        html {
+            height: 100%;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        
+        .navbar {
+            background-color: #226680;
+            padding: 18px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo-img {
+            max-height: 28px;
+            object-fit: contain;
+            transform: scale(1.4);
+            transform-origin: left center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-img:hover {
+            transform: scale(1.5);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            position: relative;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: #164253;
+        }
+        
+        .perfil-foto {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid white;
+            transition: transform 0.3s;
+        }
+        
+        .perfil-foto:hover {
+            transform: scale(1.05);
+        }
+        
+        .dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            display: none;
+            width: 260px;
+            z-index: 1000;
+        }
+        
+        .dropdown h3 {
+            margin-bottom: 10px;
+            color: #226680;
+            font-size: 18px;
+        }
+        
+        .dropdown p {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        
+        .sair-btn {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        
+        .sair-btn:hover {
+            background-color: #164253;
+        }
+        /* Restante do estilo do chat igual ao anterior... (mantido sem alterações) */
+        
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 70px);
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .chat-sidebar {
+            width: 320px;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            background-color: #fafafa;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            font-weight: 700;
+            font-size: 20px;
+            color: #1B4F72;
+            border-bottom: 1px solid #ddd;
+            user-select: none;
+        }
+        
+        .contact-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        
+        .contact {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .contact.active {
+            background-color: white;
+            color: black;
+        }
+        
+        .contact:hover {
+            background-color: #e3e3f1;
+            color: black;
+        }
+        
+        .contact img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        
+        .contact.active img {
+            border-color: white;
+        }
+        
+        .contact-info {
+            flex: 1;
+        }
+        
+        .contact-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .contact-last-message {
+            font-size: 14px;
+            color: #666;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #1B4F72;
+            color: white;
+            user-select: none;
+        }
+        
+        .chat-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        .chat-header .chat-contact-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f9f9fb;
+        }
+        
+        .message {
+            max-width: 70%;
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .message.sent {
+            background-color: #1B4F72;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.received {
+            background-color: #e3e3f1;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 15px;
+            background-color: #fafafa;
+        }
+        
+        .chat-input textarea {
+            flex: 1;
+            resize: none;
+            padding: 12px 15px;
+            font-size: 16px;
+            border-radius: 25px;
+            border: 1.5px solid #1B4F72;
+            outline: none;
+            transition: border-color 0.3s;
+            min-height: 45px;
+            max-height: 120px;
+        }
+        
+        .chat-input textarea:focus {
+            border-color: #226680;
+        }
+        
+        .btn-send {
+            background-color: #226680;
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 0 22px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-send:disabled {
+            background-color: #226680;
+            cursor: not-allowed;
+        }
+        
+        .btn-send:hover:not(:disabled) {
+            background-color: #114153;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+                height: auto;
+                margin: 10px;
+            }
+            .chat-sidebar {
+                width: 100%;
+                height: 160px;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+                overflow-x: auto;
+                display: flex;
+            }
+            .contact {
+                flex-direction: column;
+                align-items: center;
+                min-width: 120px;
+                padding: 10px;
+            }
+            .contact-name {
+                font-size: 14px;
+            }
+            .contact-last-message {
+                display: none;
+            }
+            .chat-main {
+                height: 70vh;
+            }
+            .chat-messages {
+                padding: 10px;
+            }
+            .chat-input textarea {
+                min-height: 40px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-  <div class="navbar">
-    <a href="home-professor.html" class="logo">
-      <img src="images/lexus.png" alt="Logo Lexus" />
-    </a>
-    <div class="nav-links">
-      <a href="chat.html">Chat</a>
-       <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
-
-    <div class="dropdown" id="perfilDropdown">
-      <h3>👤 Perfil do Professor</h3>
-      <p><strong>Nome:</strong> João da Silva</p>
-      <p><strong>E-mail:</strong> joao.professor@escola.com</p>
-      <p><strong>Código:</strong> ABC123</p>
-      <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+    <div class="navbar">
+        <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" id="logoLexus" />
+        <div class="nav-links">
+            <a href="chat.html">Chat</a>
+            <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+            <div class="dropdown" id="perfilDropdown">
+                <h3>👤 Perfil do Professor</h3>
+                <p><strong>Nome:</strong> João da Silva</p>
+                <p><strong>E-mail:</strong> joao.professor@escola.com</p>
+                <p><strong>Código:</strong> ABC123</p>
+                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+            </div>
+        </div>
     </div>
-      </div>
+
+    <div class="chat-container">
+        <aside class="chat-sidebar">
+            <div class="sidebar-header">Contatos</div>
+            <div class="contact-list" id="contactList">
+                <div class="contact" onclick="selectContact('', 'images/perfil1.png')">
+                    <img src="images/perfil1.png" alt="Maria Eduarda" />
+                    <div class="contact-info">
+                        <div class="contact-name">Maria Eduarda</div>
+                        <div class="contact-last-message">De nada!</div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <main class="chat-main">
+            <header class="chat-header" id="chatHeader">
+                <img src="images/perfil1.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+
+                <div class="chat-contact-name">Maria Eduarda</div>
+            </header>
+            <section class="chat-messages" id="chatMessages"></section>
+            <form class="chat-input" id="chatForm">
+                <textarea id="messageInput" placeholder="Digite uma mensagem..." rows="1" disabled></textarea>
+                <button type="submit" class="btn-send" disabled>Enviar</button>
+            </form>
+        </main>
     </div>
-  </div>
 
-  <div class="chat-container">
-    <aside class="chat-sidebar">
-      <div class="sidebar-header">Contatos</div>
-      <div class="contact-list" id="contactList">
-        <!-- Contatos serão inseridos por JS -->
-      </div>
-    </aside>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tipoUsuario = "professor";
 
-    <main class="chat-main">
-      <header class="chat-header" id="chatHeader">
-        <img src="" alt="Avatar do contato" />
-        <div class="chat-contact-name">Selecione um contato</div>
-      </header>
+            document.getElementById("logoLexus").addEventListener("click", () => {
+                window.location.href = tipoUsuario === "professor" ? "./home.html" : "./home-aluno.html";
+            });
 
-      <section class="chat-messages" id="chatMessages">
-        <!-- Mensagens do chat -->
-      </section>
+            const contacts = [{
+                id: 1,
+                name: 'Maria Eduarda',
+                avatar: 'images/perfil1.png',
+                lastMessage: 'Obrigada!',
+                messages: [{
+                    text: 'Obrigado!',
+                    sent: false
+                }, {
+                    text: 'De nada!',
+                    sent: true
+                }]
+            }];
 
-      <form class="chat-input" id="chatForm">
-        <textarea id="messageInput" placeholder="Digite uma mensagem..." rows="1" disabled></textarea>
-        <button type="submit" class="btn-send" disabled>Enviar</button>
-      </form>
-    </main>
-  </div>
+            const contactList = document.getElementById('contactList');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatHeader = document.getElementById('chatHeader');
+            const chatContactName = chatHeader.querySelector('.chat-contact-name');
+            const chatContactAvatar = chatHeader.querySelector('img');
+            const messageInput = document.getElementById('messageInput');
+            const btnSend = document.querySelector('.btn-send');
+            const chatForm = document.getElementById('chatForm');
 
-  <script>
-    // Mesma lógica JS do chat que te passei antes
-    const contacts = [
-      {
-        id: 1,
-        name: 'Maria Eduarda',
-        avatar: 'images/perfil1.png',
-        lastMessage: 'Até amanhã!',
-        messages: [
-          { text: 'Oi Maria!', sent: true, timestamp: '09:30' },
-          { text: 'Oi! Tudo bem?', sent: false, timestamp: '09:31' },
-          { text: 'Até amanhã!', sent: false, timestamp: '09:32' }
-        ]
-      },
-      {
-        id: 2,
-        name: 'Lucas Oliveira',
-        avatar: 'images/perfil2.png',
-        lastMessage: 'Vou te enviar o arquivo.',
-        messages: [
-          { text: 'Oi Lucas, recebeu o documento?', sent: true, timestamp: 'Ontem' },
-          { text: 'Ainda não, mas vou te enviar o arquivo.', sent: false, timestamp: 'Ontem' }
-        ]
-      },
-      {
-        id: 3,
-        name: 'João Pedro',
-        avatar: 'images/perfil4.png',
-        lastMessage: 'Obrigado!',
-        messages: [
-          { text: 'Obrigado!', sent: true, timestamp: '2 dias atrás' },
-          { text: 'De nada!', sent: false, timestamp: '2 dias atrás' }
-        ]
-      }
-    ];
+            function renderContacts() {
+                contactList.innerHTML = '';
+                const contact = contacts[0];
+                const div = document.createElement('div');
+                div.className = 'contact active';
+                div.innerHTML = `
+                <img src="${contact.avatar}" alt="${contact.name}" />
+                <div class="contact-info">
+                    <div class="contact-name">${contact.name}</div>
+                    <div class="contact-last-message">${contact.lastMessage}</div>
+                </div>`;
+                contactList.appendChild(div);
+            }
 
-    const contactList = document.getElementById('contactList');
-    const chatHeader = document.getElementById('chatHeader');
-    const chatMessages = document.getElementById('chatMessages');
-    const chatForm = document.getElementById('chatForm');
-    const messageInput = document.getElementById('messageInput');
+            function renderChat(contact) {
+                chatContactName.textContent = contact.name;
+                chatContactAvatar.src = contact.avatar;
+                chatMessages.innerHTML = '';
+                contact.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.sent ? 'sent' : 'received'}`;
+                    div.textContent = msg.text;
+                    chatMessages.appendChild(div);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
 
-    let activeContact = null;
+            chatForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const text = messageInput.value.trim();
+                if (!text) return;
+                const contact = contacts[0];
+                contact.messages.push({
+                    text,
+                    sent: true
+                });
+                contact.lastMessage = text;
+                renderChat(contact);
+                renderContacts();
+                messageInput.value = '';
+                btnSend.disabled = true;
+                setTimeout(() => {
+                    contact.messages.push({
+                        text: 'Recebi sua mensagem!',
+                        sent: false
+                    });
+                    contact.lastMessage = 'Recebi sua mensagem!';
+                    renderChat(contact);
+                    renderContacts();
+                }, 1500);
+            });
 
-    function renderContacts() {
-      contactList.innerHTML = '';
-      contacts.forEach(contact => {
-        const div = document.createElement('div');
-        div.classList.add('contact');
-        div.dataset.id = contact.id;
-        div.innerHTML = `
-          <img src="${contact.avatar}" alt="${contact.name}" />
-          <div class="contact-info">
-            <div class="contact-name">${contact.name}</div>
-            <div class="contact-last-message">${contact.lastMessage}</div>
-          </div>
-        `;
-        div.addEventListener('click', () => {
-          setActiveContact(contact.id);
+            messageInput.addEventListener('input', () => {
+                btnSend.disabled = !messageInput.value.trim();
+            });
+
+            renderContacts();
+            renderChat(contacts[0]);
+            messageInput.disabled = false;
+
+            const perfilBtn = document.getElementById("perfilBtn");
+            const perfilDropdown = document.getElementById("perfilDropdown");
+
+            perfilBtn.addEventListener("click", () => {
+                perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
+            });
+
+            window.addEventListener("click", function(e) {
+                if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+                    perfilDropdown.style.display = "none";
+                }
+            });
         });
-        contactList.appendChild(div);
-      });
-    }
+    </script>
 
-    function setActiveContact(id) {
-      activeContact = contacts.find(c => c.id === id);
-
-      // Marca ativo no sidebar
-      document.querySelectorAll('.contact').forEach(c => {
-        c.classList.toggle('active', c.dataset.id == id);
-      });
-
-      // Atualiza header
-      chatHeader.querySelector('img').src = activeContact.avatar;
-      chatHeader.querySelector('.chat-contact-name').textContent = activeContact.name;
-
-      // Habilita input
-      messageInput.disabled = false;
-      chatForm.querySelector('button').disabled = false;
-      messageInput.focus();
-
-      renderMessages();
-    }
-
-    function renderMessages() {
-      chatMessages.innerHTML = '';
-      activeContact.messages.forEach(msg => {
-        const div = document.createElement('div');
-        div.classList.add('message');
-        div.classList.add(msg.sent ? 'sent' : 'received');
-        div.textContent = msg.text;
-        chatMessages.appendChild(div);
-      });
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    chatForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const text = messageInput.value.trim();
-      if (!text) return;
-
-      // Adiciona mensagem enviada
-      activeContact.messages.push({ text, sent: true, timestamp: new Date().toLocaleTimeString() });
-      activeContact.lastMessage = text;
-
-      renderMessages();
-      renderContacts();
-
-      messageInput.value = '';
-      messageInput.focus();
-    });
-
-    // Inicializa contatos
-    renderContacts();
-
-    // Dropdown do perfil
-    
-    const perfilBtn = document.getElementById("perfilBtn");
-    const perfilDropdown = document.getElementById("perfilDropdown");
-    
-
-    perfilBtn.addEventListener("click", () => {
-      const isVisible = perfilDropdown.style.display === "block";
-      perfilDropdown.style.display = isVisible ? "none" : "block";
-      produzirDropdown.style.display = "none";
-    });
-
-    
-
-    window.addEventListener("click", function (e) {
-      if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
-        perfilDropdown.style.display = "none";
-      }
-      if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
-        produzirDropdown.style.display = "none";
-      }
-    });
-
-  </script>
 </body>
+
 </html>
