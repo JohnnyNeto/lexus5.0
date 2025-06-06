@@ -27,8 +27,8 @@
             border-radius: 10px;
             overflow: hidden;
             width: 90%;
-            max-width: 1000px;
-            height: 600px;
+            max-width: 1100px;
+            height: 650px;
             /* NOVO: altura fixa */
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
@@ -66,7 +66,7 @@
         
         .logo-img {
             width: 130px;
-            margin: 0 auto 30px;
+            margin: 0 auto 0px;
         }
         
         .divider {
@@ -185,7 +185,8 @@
             <label for="email">Usuário ou e-mail</label>
             <input type="email" id="email" placeholder="Digite seu usuário ou e-mail" />
 
-            <button class="disabled-button" disabled>Entrar</button>
+            <label for="senha">Senha</label>
+            <input type="text" id="senhaLogin" placeholder="Digite sua senha" /> <button class="disabled-button" disabled>Entrar</button>
 
             <a class="link-codigo" id="mostrarCodigo">🔐 Cadastrar com código</a>
 
@@ -196,8 +197,13 @@
                 <label for="emailCadastro">E-mail</label>
                 <input type="email" id="emailCadastro" placeholder="Digite seu e-mail" />
 
+                <label for="senhaCadastro">Senha</label>
+                <input type="text" id="senhaCadastro" placeholder="Digite sua senha" />
+
                 <label for="codigo">Código de acesso</label>
                 <input type="text" id="codigo" placeholder="Digite seu código" />
+
+
 
                 <button id="botaoCadastrar" class="disabled-button" disabled>Cadastrar</button>
 
@@ -217,11 +223,9 @@
         const nomeUsuarioInput = document.getElementById("nomeUsuario");
         const emailCadastroInput = document.getElementById("emailCadastro");
         const codigoInput = document.getElementById("codigo");
-        const senhaCadastroInput = document.createElement("input");
-        senhaCadastroInput.type = "password";
-        senhaCadastroInput.placeholder = "Digite sua senha";
-        senhaCadastroInput.id = "senhaCadastro";
-        senhaCadastroInput.required = true;
+        const senhaLoginInput = document.getElementById("senhaLogin");
+        const senhaCadastroInput = document.getElementById("senhaCadastro")
+
 
         codigoInput.parentNode.insertBefore(
             senhaCadastroInput,
@@ -232,11 +236,6 @@
         const emailLoginInput = document.getElementById("email");
         const botaoLogin = document.querySelector("button");
 
-        const senhaLoginInput = document.createElement("input");
-        senhaLoginInput.type = "password";
-        senhaLoginInput.placeholder = "Digite sua senha";
-        senhaLoginInput.id = "senhaLogin";
-        senhaLoginInput.required = true;
 
         emailLoginInput.parentNode.insertBefore(
             senhaLoginInput,
@@ -266,7 +265,7 @@
         senhaCadastroInput.addEventListener("input", validarCamposCadastro);
 
         // Botão de cadastro com código
-        botaoCadastrar.addEventListener("click", async function () {
+        botaoCadastrar.addEventListener("click", async function() {
             const sucesso = document.getElementById("mensagemSucesso");
             const erro = document.getElementById("mensagemErro");
 
@@ -276,7 +275,9 @@
             try {
                 const response = await fetch("http://localhost:8000/cadastrar", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify({
                         nome: nomeUsuarioInput.value.trim(),
                         email: emailCadastroInput.value.trim(),
@@ -322,11 +323,13 @@
             }
         }
 
-        botaoLogin.addEventListener("click", async () => {
+        botaoLogin.addEventListener("click", async() => {
             try {
                 const response = await fetch("http://localhost:8000/login", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify({
                         email: emailLoginInput.value.trim(),
                         senha: senhaLoginInput.value.trim()
@@ -355,4 +358,5 @@
         });
     </script>
 </body>
+
 </html>
