@@ -364,13 +364,13 @@
                 imagemURL = "images/podcast0.png"; // Imagem padrão para podcast
             } else if (pub.tipo === "tema") {
                 imagemURL = "images/tematica.jpg"; // Imagem padrão para temática
-            } else {
-                imagemURL = pub.imagem ? `http://localhost:8000/${encodeURI(pub.imagem)}` : "";
+            } else if (pub.tipo === "fotografia" && pub.imagem) {
+                imagemURL = `http://localhost:8000/uploads/${encodeURIComponent(pub.imagem)}`;
             }
 
             return `
         <div class="card">
-            ${imagemURL ? `<img src="${imagemURL}" alt="Imagem da publicação ${pub.titulo}" />` : ""}
+            ${imagemURL ? `<img src="${imagemURL}" alt="${pub.titulo}" />` : ""}
             <div class="card-content">
                 <div class="tag">${pub.tipo}</div>
                 <h3>${pub.titulo}</h3>
@@ -381,6 +381,8 @@
         </div>
     `;
 }
+
+
 
 
         function abrirChat(nomeAluno) {

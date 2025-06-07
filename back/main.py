@@ -305,19 +305,20 @@ async def publicar(
     tipo: Literal["podcast", "fotografia", "tematica"] = Form(...),
     titulo: str = Form(...),
     conteudo: str = Form(...),
-    imagem: UploadFile | str | None = Form(None)
+    imagem: UploadFile = File(None)
 ):
     try:
         os.makedirs("uploads", exist_ok=True)
 
         # Detectar se o campo imagem é UploadFile (foto) ou string (link)
         caminho_arquivo = None
-        if tipo == "fotografia" and isinstance(imagem, UploadFile):
+        if tipo == "fotografia" and imagem is not None:
+
             nome_unico = f"{uuid.uuid4().hex}_{imagem.filename}"
             caminho_arquivo = nome_unico  # SALVA SÓ O NOME NO BANCO!
             with open(f"uploads/{nome_unico}", "wb") as buffer:
                 shutil.copyfileobj(imagem.file, buffer)
-                print("📁 Arquivo salvo em: uploads/" + nome_unico)
+
 
 
         elif tipo in ["podcast", "tematica"] and isinstance(imagem, str):

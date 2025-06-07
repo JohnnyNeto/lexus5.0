@@ -355,7 +355,9 @@
                     } else if (producao.tipo === "tema") {
                         img.src = "images/tematica.jpg";
                     } else {
-                        img.src = producao.imagem ? `http://localhost:8000/${encodeURI(producao.imagem)}` : "";
+                        img.src = producao.imagem ? `http://localhost:8000/uploads/${encodeURIComponent(producao.imagem)}` : "";
+
+
                     }
 
                     img.alt = producao.titulo || "Imagem da produção";

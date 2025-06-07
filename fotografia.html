@@ -297,7 +297,8 @@
     <div class="container">
         <div class="left-panel">
             <h2>Produção<br><small style="font-size:16px;color:#777">Produção por: Fotografia</small></h2>
-            <input type="text" placeholder="Adicione um tema se quiser...">
+
+            <input type="text" id="titulo" placeholder="Adicione um tema se quiser...">
             <textarea id="textoRedacao" placeholder="Digite aqui seu texto..."></textarea>
             <div class="word-count" id="contadorPalavras">0 palavras</div>
             <div class="btn-wrapper">
@@ -324,13 +325,13 @@
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.style.display = "block";
-                }
+                };
                 reader.readAsDataURL(file);
             }
         }
 
         function enviarRedacao() {
-            const titulo = document.querySelector("input[type='text']").value.trim();
+            const titulo = document.getElementById("titulo").value.trim(); // <-- ID corrigido aqui
             const conteudo = document.getElementById("textoRedacao").value.trim();
             const imagemInput = document.getElementById("upload");
             const imagem = imagemInput.files[0];
@@ -351,6 +352,12 @@
             formData.append("conteudo", conteudo);
             if (imagem) formData.append("imagem", imagem);
 
+            // 📤 Diagnóstico: log para verificar o conteúdo do form
+            console.log("📤 Enviando FormData:");
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+
             fetch("http://localhost:8000/publicar", {
                     method: "POST",
                     body: formData
@@ -360,9 +367,8 @@
                     return res.json();
                 })
                 .then(data => {
+                    console.log("✅ Sucesso:", data);
                     alert("Produção enviada com sucesso!");
-
-                    // Redireciona para a home do aluno após envio
                     window.location.href = "home-aluno.html";
                 })
                 .catch(err => {
@@ -405,7 +411,7 @@
             }
         });
 
-        // 👇 Redirecionamento dinâmico do logo Lexus
+        // Redirecionamento do logo Lexus
         const tipoUsuario = "aluno"; // ou "professor"
 
         document.getElementById("logoLexus").addEventListener("click", () => {
