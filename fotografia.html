@@ -350,7 +350,7 @@
             formData.append("tipo", "fotografia");
             formData.append("titulo", titulo);
             formData.append("conteudo", conteudo);
-            if (imagem) formData.append("imagem", imagem);
+            if (imagem) formData.append("imagem", imagem); // ✅ nome correto!
 
             // 📤 Diagnóstico: log para verificar o conteúdo do form
             console.log("📤 Enviando FormData:");

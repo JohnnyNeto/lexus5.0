@@ -168,6 +168,14 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            cursor: default;
+            height: 480px;
+            /* altura fixa para o card inteiro */
+            max-height: 480px;
+            max-width: 400px;
         }
         
         .card:hover {
@@ -215,10 +223,30 @@
             margin-bottom: 14px;
         }
         
-        .card p {
+        .card {
+            background: white;
+        }
+        
+        .card-content p {
             font-size: 16px;
             color: #444;
             line-height: 1.6;
+            max-height: 120px;
+            /* Limita altura do parágrafo (aprox. 5 linhas) */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+        
+        .card-content p::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 40px;
+            width: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #f4f6fa);
+            /* gradiente suave */
         }
         
         .nota {
@@ -344,30 +372,41 @@
                 muralTurma.innerHTML = "";
                 muralMinhas.innerHTML = "";
 
+                if (producoes.length === 0) {
+                    muralTurma.innerHTML = `<div style="text-align:center; font-size:18px; color:#777; padding:40px;">
+                Esta turma ainda não tem publicações.
+            </div>`;
+
+                    muralMinhas.innerHTML = `<div style="text-align:center; font-size:18px; color:#777; padding:40px;">
+                Você ainda não enviou nenhuma produção.
+            </div>`;
+                    return;
+                }
+
                 producoes.forEach(producao => {
+                    const cardLink = document.createElement("a");
+                    cardLink.href = "ler.html";
+                    cardLink.style.textDecoration = "none";
+                    cardLink.style.color = "inherit";
+
                     const card = document.createElement("div");
                     card.className = "card";
 
                     const img = document.createElement("img");
-
                     if (producao.tipo === "podcast") {
                         img.src = "images/podcast0.png";
-                    } else if (producao.tipo === "tema") {
+                    } else if (producao.tipo === "tematica") {
                         img.src = "images/tematica.jpg";
                     } else {
                         img.src = producao.imagem ? `http://localhost:8000/uploads/${encodeURIComponent(producao.imagem)}` : "";
-
-
                     }
-
                     img.alt = producao.titulo || "Imagem da produção";
 
                     const cardContent = document.createElement("div");
                     cardContent.className = "card-content";
 
-                    // Tag + ícone pelo tipo
                     let tagTexto = "";
-                    if (producao.tipo === "tema") tagTexto = "📝 Tema";
+                    if (producao.tipo === "tematica") tagTexto = "📝 Tema Proposto";
                     else if (producao.tipo === "podcast") tagTexto = "🎧 Podcast";
                     else if (producao.tipo === "fotografia") tagTexto = "📷 Fotografia";
 
@@ -402,14 +441,12 @@
 
                     card.appendChild(img);
                     card.appendChild(cardContent);
+                    cardLink.appendChild(card);
 
-                    // Sempre adiciona na turma
-                    muralTurma.appendChild(card);
+                    muralTurma.appendChild(cardLink);
 
-                    // Se o autor é o usuário (compara nome do aluno)
                     if (producao.aluno === nomeUsuario) {
-                        // Clona o card para não remover da turma
-                        const cardClone = card.cloneNode(true);
+                        const cardClone = cardLink.cloneNode(true);
                         muralMinhas.appendChild(cardClone);
                     }
                 });

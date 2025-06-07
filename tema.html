@@ -318,8 +318,6 @@
             function enviarRedacao() {
                 const titulo = document.querySelector("input[type='text']").value.trim();
                 const conteudo = document.getElementById("textoRedacao").value.trim();
-                const imagemInput = document.getElementById("upload");
-                const imagem = imagemInput.files[0];
 
                 const email_aluno = localStorage.getItem("email");
                 const codigo_sala = localStorage.getItem("codigo_sala");
@@ -332,12 +330,13 @@
                 const formData = new FormData();
                 formData.append("email_aluno", email_aluno);
                 formData.append("codigo_sala", codigo_sala);
-                formData.append("tipo", "fotografia");
+                formData.append("tipo", "tematica"); // ⬅️ Aqui define corretamente o tipo
                 formData.append("titulo", titulo);
                 formData.append("conteudo", conteudo);
-                if (imagem) formData.append("imagem", imagem);
 
-                fetch("http://localhost:8000/publicar", {
+                formData.append("tipo", "tematica");
+                fetch("http://localhost:8000/publicar-tematica", {
+
                         method: "POST",
                         body: formData
                     })
@@ -347,8 +346,6 @@
                     })
                     .then(data => {
                         alert("Produção enviada com sucesso!");
-
-                        // Redireciona para a home do aluno após envio
                         window.location.href = "home-aluno.html";
                     })
                     .catch(err => {
@@ -356,6 +353,7 @@
                         alert("Ocorreu um erro ao enviar sua produção.");
                     });
             }
+
 
 
             const texto = document.getElementById("textoRedacao");

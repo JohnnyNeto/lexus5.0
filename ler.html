@@ -257,6 +257,49 @@
                 perfilDropdown.style.display = "none";
             }
         });
+
+        async function carregarPublicacao() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+
+            if (!id) {
+                alert("ID da publicação não encontrado na URL.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`http://localhost:8000/publicacao/${id}`);
+                if (!res.ok) throw new Error("Erro ao buscar publicação");
+
+                const publicacao = await res.json();
+
+                document.querySelector(".post-text h2").textContent = publicacao.aluno;
+                document.querySelector(".post-date").textContent = new Date(publicacao.data_criacao).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric"
+                });
+                document.querySelector(".post-description").textContent = publicacao.conteudo;
+
+                let imagemURL = "";
+                if (publicacao.tipo === "tematica") {
+                    imagemURL = "images/tematica.jpg";
+                } else if (publicacao.tipo === "podcast") {
+                    imagemURL = "images/podcast0.png";
+                } else if (publicacao.tipo === "fotografia" && publicacao.imagem) {
+                    imagemURL = `http://localhost:8000/uploads/${encodeURIComponent(publicacao.imagem)}`;
+                }
+
+                if (imagemURL) {
+                    document.querySelector(".post-image img").src = imagemURL;
+                    document.querySelector(".post-image img").alt = publicacao.titulo;
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar publicação:", error);
+                alert("Erro ao carregar os dados da publicação.");
+            }
+        }
     </script>
 
 </body>

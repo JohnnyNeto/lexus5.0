@@ -144,9 +144,14 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             cursor: default;
+            height: 480px;
+            /* altura fixa para o card inteiro */
+            max-height: 480px;
+            max-width: 400px;
         }
         
         .card:hover {
@@ -333,7 +338,7 @@
     </div>
 
     <div class="container">
-        <h1>📝 Textos Publicados</h1>
+        <h1>📝 Produções da Turma</h1>
         <div class="mural" id="todasRedacoesMural"></div>
     </div>
 
@@ -361,26 +366,29 @@
             let imagemURL = "";
 
             if (pub.tipo === "podcast") {
-                imagemURL = "images/podcast0.png"; // Imagem padrão para podcast
-            } else if (pub.tipo === "tema") {
-                imagemURL = "images/tematica.jpg"; // Imagem padrão para temática
+                imagemURL = "images/podcast0.png";
+            } else if (pub.tipo === "tema" || pub.tipo === "tematica") {
+                imagemURL = "images/tematica.jpg";
             } else if (pub.tipo === "fotografia" && pub.imagem) {
                 imagemURL = `http://localhost:8000/uploads/${encodeURIComponent(pub.imagem)}`;
             }
 
             return `
-        <div class="card">
-            ${imagemURL ? `<img src="${imagemURL}" alt="${pub.titulo}" />` : ""}
-            <div class="card-content">
-                <div class="tag">${pub.tipo}</div>
-                <h3>${pub.titulo}</h3>
-                <div class="autor"><strong>Autor:</strong> ${pub.aluno}</div>
-                <div class="data"><strong>Data:</strong> ${new Date(pub.data_criacao).toLocaleDateString("pt-BR")}</div>
-                <p>${pub.conteudo}</p>
+        <a href="ler.html?id=${pub.id}" style="text-decoration: none; color: inherit;">
+            <div class="card">
+                ${imagemURL ? `<img src="${imagemURL}" alt="${pub.titulo}" />` : ""}
+                <div class="card-content">
+                    <div class="tag">${pub.tipo}</div>
+                    <h3>${pub.titulo}</h3>
+                    <div class="autor"><strong>Autor:</strong> ${pub.aluno}</div>
+                    <div class="data"><strong>Data:</strong> ${new Date(pub.data_criacao).toLocaleDateString("pt-BR")}</div>
+                    <p>${pub.conteudo}</p>
+                </div>
             </div>
-        </div>
+        </a>
     `;
 }
+
 
 
 
@@ -406,43 +414,55 @@
 
             if (codigoSala) {
                 // 🔹 Carregar redações
-                fetch(`http://localhost:8000/publicacoes/${codigoSala}`)
-                    .then(response => response.json())
-                    .then(publicacoes => {
-                        const mural = document.getElementById("todasRedacoesMural");
-                        mural.innerHTML = "";
-                        publicacoes.forEach(pub => {
-                            const card = criarCard(pub);
-                            mural.innerHTML += card;
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Erro ao carregar publicações:", error);
-                    });
+fetch(`http://localhost:8000/publicacoes/${codigoSala}`)
+    .then(response => response.json())
+    .then(publicacoes => {
+        const mural = document.getElementById("todasRedacoesMural");
+        mural.innerHTML = "";
 
-                // 🔹 Carregar alunos
-                fetch(`http://localhost:8000/alunos/${codigoSala}`)
-                    .then(response => response.json())
-                    .then(alunos => {
-                        const alunosList = document.getElementById("alunosList");
-                        alunosList.innerHTML = "";
+        if (publicacoes.length === 0) {
+            mural.innerHTML = `<p style="font-size: 18px; color: #555; text-align: center;">Esta turma ainda não tem publicações.</p>`;
+            return;
+        }
 
-                        alunos.forEach((aluno, index) => {
-                            const imagem = `images/perfil${(index % 5) + 1}.png`;
-                            const card = document.createElement("div");
-                            card.className = "aluno-card";
-                            card.innerHTML = `
-                                <img src="${imagem}" alt="Foto do aluno ${aluno.nome}" />
-                                <div class="aluno-nome">${aluno.nome}</div>
-                                <p style="font-size: 13px; color: #666; margin: 6px 0;">${aluno.email}</p>
-                                <button class="btn-msg" onclick="abrirChat('${aluno.nome}')">Enviar mensagem</button>
-                            `;
-                            alunosList.appendChild(card);
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Erro ao carregar alunos:", error);
-                    });
+        publicacoes.forEach(pub => {
+            const card = criarCard(pub);
+            mural.innerHTML += card;
+        });
+    })
+    .catch(error => {
+        console.error("Erro ao carregar publicações:", error);
+    });
+
+// 🔹 Carregar alunos
+fetch(`http://localhost:8000/alunos/${codigoSala}`)
+    .then(response => response.json())
+    .then(alunos => {
+        const alunosList = document.getElementById("alunosList");
+        alunosList.innerHTML = "";
+
+        if (alunos.length === 0) {
+            alunosList.innerHTML = `<p style="font-size: 18px; color: #555; width: 100%; text-align: center;">Não há alunos na turma.</p>`;
+            return;
+        }
+
+        alunos.forEach((aluno, index) => {
+            const imagem = `images/perfil${(index % 5) + 1}.png`;
+            const card = document.createElement("div");
+            card.className = "aluno-card";
+            card.innerHTML = `
+                <img src="${imagem}" alt="Foto do aluno ${aluno.nome}" />
+                <div class="aluno-nome">${aluno.nome}</div>
+                <p style="font-size: 13px; color: #666; margin: 6px 0;">${aluno.email}</p>
+                <button class="btn-msg" onclick="abrirChat('${aluno.nome}')">Enviar mensagem</button>
+            `;
+            alunosList.appendChild(card);
+        });
+    })
+    .catch(error => {
+        console.error("Erro ao carregar alunos:", error);
+    });
+
             } else {
                 console.warn("Código da sala não encontrado no localStorage.");
             }

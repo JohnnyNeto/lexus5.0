@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 
 
 
+
 app = FastAPI()
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 DB_FILE = "usuarios.db"
@@ -295,6 +296,91 @@ def listar_alunos_por_sala(codigo_sala: str):
 
 
 
+@app.post("/publicar-tematica")
+async def publicar_tematica(
+    email_aluno: str = Form(...),
+    codigo_sala: str = Form(...),
+    titulo: str = Form(...),
+    conteudo: str = Form(...)
+):
+    try:
+        # Caminho fixo para imagem de tema proposto
+        imagem_padrao = "images/tematica.jpg"
+        tipo_publicacao = "tematica"
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+
+            # Verifica se o aluno existe
+            cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email_aluno,))
+            aluno = cursor.fetchone()
+
+            if aluno is None:
+                raise HTTPException(status_code=400, detail="Aluno não encontrado com este email.")
+
+            # Insere publicação
+            cursor.execute(
+                """
+                INSERT INTO publicacoes (id_aluno, codigo_sala, tipo, titulo, conteudo, imagem)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (aluno[0], codigo_sala, tipo_publicacao, titulo, conteudo, imagem_padrao)
+            )
+            conn.commit()
+
+        return {
+            "mensagem": "Publicação temática enviada com sucesso!",
+            "dados": {
+                "email_aluno": email_aluno,
+                "codigo_sala": codigo_sala,
+                "tipo": tipo_publicacao,
+                "titulo": titulo,
+                "conteudo": conteudo,
+                "imagem": imagem_padrao
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao salvar produção temática: {str(e)}")
+
+
+@app.post("/publicar-link")
+async def publicar_link(
+    email_aluno: str = Form(...),
+    codigo_sala: str = Form(...),
+    tipo: Literal["podcast", "tematica"] = Form(...),
+    titulo: str = Form(...),
+    conteudo: str = Form(...),
+    imagem: str = Form(...)  # Aqui o "imagem" é o LINK
+):
+    try:
+        if tipo not in ["podcast", "tematica"]:
+            raise HTTPException(status_code=400, detail="Tipo inválido para essa rota.")
+
+        caminho_arquivo = imagem.strip()  # salva o link diretamente
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email_aluno,))
+            aluno = cursor.fetchone()
+            if aluno is None:
+                raise HTTPException(status_code=400, detail="Aluno não encontrado com este email.")
+
+            cursor.execute(
+                "INSERT INTO publicacoes (id_aluno, codigo_sala, tipo, titulo, conteudo, imagem) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (aluno[0], codigo_sala, tipo, titulo, conteudo, caminho_arquivo)
+            )
+            conn.commit()
+
+        return {
+            "mensagem": "Publicação enviada com sucesso!",
+            "imagem": caminho_arquivo
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao salvar publicação: {str(e)}")
+
 # Rota: Criar publicação
 
 @app.post("/publicar")
@@ -306,6 +392,7 @@ async def publicar(
     titulo: str = Form(...),
     conteudo: str = Form(...),
     imagem: UploadFile = File(None)
+
 ):
     try:
         os.makedirs("uploads", exist_ok=True)
@@ -358,6 +445,32 @@ async def publicar(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao salvar publicação: {str(e)}")
+
+@app.get("/publicacao/{id}")
+def get_publicacao_por_id(id: int):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT p.id, u.nome, p.titulo, p.conteudo, p.tipo, p.imagem, p.data_criacao
+            FROM publicacoes p
+            JOIN usuarios u ON p.id_aluno = u.id
+            WHERE p.id = ?
+        """, (id,))
+        row = cursor.fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Publicação não encontrada")
+
+        return {
+            "id": row[0],
+            "aluno": row[1],
+            "titulo": row[2],
+            "conteudo": row[3],
+            "tipo": row[4],
+            "imagem": row[5],
+            "data_criacao": row[6]
+        }
+
 
 # Rota: Listar publicações de uma sala
 @app.get("/publicacoes/{codigo_sala}")
