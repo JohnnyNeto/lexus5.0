@@ -29,7 +29,6 @@
             width: 90%;
             max-width: 1100px;
             height: 650px;
-            /* NOVO: altura fixa */
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
         
@@ -37,7 +36,6 @@
             background-color: #1B4F72;
             color: white;
             flex: 7;
-            /* NOVO: 70% */
             padding: 40px 20px;
             text-align: center;
             position: relative;
@@ -57,7 +55,6 @@
         .right {
             background: white;
             flex: 3;
-            /* NOVO: 30% */
             padding: 40px 30px;
             display: flex;
             flex-direction: column;
@@ -66,17 +63,10 @@
         
         .logo-img {
             width: 130px;
-            margin: 0 auto 0px;
+            margin: 0 auto 40px;
         }
         
-        .divider {
-            height: 1px;
-            background: #eee;
-            margin-bottom: 20px;
-        }
-        
-        label,
-        .codigo-section label {
+        label {
             font-size: 14px;
             margin-bottom: 5px;
         }
@@ -102,7 +92,7 @@
         
         .enabled-button {
             width: 100%;
-            background: #3c2a7c;
+            background: #226680;
             color: white;
             border: none;
             padding: 10px;
@@ -115,12 +105,11 @@
         }
         
         .enabled-button:hover {
-            background: #2d1e63;
+            background: #1B4F72;
         }
         
         .link-codigo {
-            font-size: 14px;
-            color: #3c2a7c;
+            color: #226680;
             text-align: center;
             text-decoration: none;
             cursor: pointer;
@@ -135,6 +124,11 @@
             margin-top: 20px;
         }
         
+        #botaoCadastrar {
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+        
         .success-message {
             color: green;
             text-align: center;
@@ -145,6 +139,12 @@
             color: red;
             text-align: center;
             font-weight: bold;
+        }
+        
+        #mostrarCodigo {
+            display: block;
+            margin: 0 auto 20px auto;
+            text-align: center;
         }
         
         @media (max-width: 768px) {
@@ -179,17 +179,22 @@
 
         <div class="right">
             <img class="logo-img" src="images/lexus-preto.png" alt="Logo Lexus" />
-
             <div class="divider"></div>
 
-            <label for="email">Usuário ou e-mail</label>
-            <input type="email" id="email" placeholder="Digite seu usuário ou e-mail" />
+            <!-- Login Section -->
+            <div id="loginSection">
+                <label for="identificador">Usuário ou e-mail</label>
+                <input type="text" id="identificador" placeholder="Digite seu usuário ou e-mail" />
 
-            <label for="senha">Senha</label>
-            <input type="text" id="senhaLogin" placeholder="Digite sua senha" /> <button class="disabled-button" disabled>Entrar</button>
+                <label for="senhaLogin">Senha</label>
+                <input type="text" id="senhaLogin" placeholder="Digite sua senha" />
 
-            <a class="link-codigo" id="mostrarCodigo">🔐 Cadastrar com código</a>
+                <button class="disabled-button" disabled id="botaoLogin">Entrar</button>
 
+                <a class="link-codigo" id="mostrarCodigo">Cadastrar</a>
+            </div>
+
+            <!-- Cadastro Section -->
             <div class="codigo-section" id="codigoSection">
                 <label for="nomeUsuario">Nome de usuário</label>
                 <input type="text" id="nomeUsuario" placeholder="Digite seu nome de usuário" />
@@ -200,10 +205,8 @@
                 <label for="senhaCadastro">Senha</label>
                 <input type="text" id="senhaCadastro" placeholder="Digite sua senha" />
 
-                <label for="codigo">Código de acesso</label>
+                <label for="codigo">Código da Turma</label>
                 <input type="text" id="codigo" placeholder="Digite seu código" />
-
-
 
                 <button id="botaoCadastrar" class="disabled-button" disabled>Cadastrar</button>
 
@@ -214,34 +217,46 @@
     </div>
 
     <script>
-        // Mostrar seção do código
+        // Mostrar formulário de cadastro e esconder login
         document.getElementById("mostrarCodigo").addEventListener("click", () => {
             document.getElementById("codigoSection").style.display = "block";
+            document.getElementById("loginSection").style.display = "none";
         });
 
-        // Seletores de campos
+        // Seletores
+        const identificadorInput = document.getElementById("identificador");
+        const senhaLoginInput = document.getElementById("senhaLogin");
+        const botaoLogin = document.getElementById("botaoLogin");
+
         const nomeUsuarioInput = document.getElementById("nomeUsuario");
         const emailCadastroInput = document.getElementById("emailCadastro");
+        const senhaCadastroInput = document.getElementById("senhaCadastro");
         const codigoInput = document.getElementById("codigo");
-        const senhaLoginInput = document.getElementById("senhaLogin");
-        const senhaCadastroInput = document.getElementById("senhaCadastro")
-
-
-        codigoInput.parentNode.insertBefore(
-            senhaCadastroInput,
-            codigoInput.nextSibling
-        );
-
         const botaoCadastrar = document.getElementById("botaoCadastrar");
-        const emailLoginInput = document.getElementById("email");
-        const botaoLogin = document.querySelector("button");
 
+        const sucesso = document.getElementById("mensagemSucesso");
+        const erro = document.getElementById("mensagemErro");
 
-        emailLoginInput.parentNode.insertBefore(
-            senhaLoginInput,
-            botaoLogin
-        );
+        // Validação do Login
+        function validarCamposLogin() {
+            if (
+                identificadorInput.value.trim() !== "" &&
+                senhaLoginInput.value.trim().length >= 6
+            ) {
+                botaoLogin.disabled = false;
+                botaoLogin.classList.remove("disabled-button");
+                botaoLogin.classList.add("enabled-button");
+            } else {
+                botaoLogin.disabled = true;
+                botaoLogin.classList.remove("enabled-button");
+                botaoLogin.classList.add("disabled-button");
+            }
+        }
 
+        identificadorInput.addEventListener("input", validarCamposLogin);
+        senhaLoginInput.addEventListener("input", validarCamposLogin);
+
+        // Validação do Cadastro
         function validarCamposCadastro() {
             if (
                 nomeUsuarioInput.value.trim() !== "" &&
@@ -261,14 +276,11 @@
 
         nomeUsuarioInput.addEventListener("input", validarCamposCadastro);
         emailCadastroInput.addEventListener("input", validarCamposCadastro);
-        codigoInput.addEventListener("input", validarCamposCadastro);
         senhaCadastroInput.addEventListener("input", validarCamposCadastro);
+        codigoInput.addEventListener("input", validarCamposCadastro);
 
-        // Botão de cadastro com código
-        botaoCadastrar.addEventListener("click", async function() {
-            const sucesso = document.getElementById("mensagemSucesso");
-            const erro = document.getElementById("mensagemErro");
-
+        // Enviar cadastro
+        botaoCadastrar.addEventListener("click", async() => {
             sucesso.style.display = "none";
             erro.style.display = "none";
 
@@ -288,41 +300,20 @@
                 });
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || "Erro desconhecido");
-                }
+                if (!response.ok) throw new Error(data.detail || "Erro desconhecido");
 
                 localStorage.setItem("email", emailCadastroInput.value.trim());
                 localStorage.setItem("codigo_sala", codigoInput.value.trim());
 
                 sucesso.style.display = "block";
-
-                setTimeout(() => {
-                    window.location.href = "home-aluno.html";
-                }, 1500);
+                setTimeout(() => window.location.href = "home-aluno.html", 1500);
             } catch (e) {
                 erro.textContent = `❌ ${e.message}`;
                 erro.style.display = "block";
             }
         });
 
-        // Login
-        emailLoginInput.addEventListener("input", validarCamposLogin);
-        senhaLoginInput.addEventListener("input", validarCamposLogin);
-
-        function validarCamposLogin() {
-            if (emailLoginInput.value.trim() !== "" && senhaLoginInput.value.trim() !== "") {
-                botaoLogin.disabled = false;
-                botaoLogin.classList.remove("disabled-button");
-                botaoLogin.classList.add("enabled-button");
-            } else {
-                botaoLogin.disabled = true;
-                botaoLogin.classList.remove("enabled-button");
-                botaoLogin.classList.add("disabled-button");
-            }
-        }
-
+        // Enviar login
         botaoLogin.addEventListener("click", async() => {
             try {
                 const response = await fetch("http://localhost:8000/login", {
@@ -331,16 +322,13 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        email: emailLoginInput.value.trim(),
+                        identificador: identificadorInput.value.trim(),
                         senha: senhaLoginInput.value.trim()
                     })
                 });
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || "Erro ao logar.");
-                }
+                if (!response.ok) throw new Error(data.detail || "Erro ao logar.");
 
                 if (data.cargo !== "aluno") {
                     alert("Apenas alunos podem fazer login aqui.");

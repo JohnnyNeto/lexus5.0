@@ -146,8 +146,9 @@ class Usuario(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    identificador: str  # pode ser email ou nome
     senha: str
+
 
 
 class Publicacao(BaseModel):
@@ -244,28 +245,31 @@ def cadastrar_usuario(usuario: Usuario):
             raise HTTPException(status_code=500, detail="Erro ao cadastrar.")
 
 
-# Rota: Login
+# Rota: Login com nome OU e-mail
 @app.post("/login")
 def login(usuario: LoginRequest):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT nome, senha, cargo, sala FROM usuarios WHERE email = ?",
-            (usuario.email,)
+            """
+            SELECT nome, email, senha, cargo, sala
+            FROM usuarios
+            WHERE email = ? OR nome = ?
+            """,
+            (usuario.identificador, usuario.identificador)
         )
         resultado = cursor.fetchone()
 
-    if resultado and resultado[1] == usuario.senha:
+    if resultado and resultado[2] == usuario.senha:
         return {
             "mensagem": f"Login bem-sucedido. Bem-vindo, {resultado[0]}!",
-            "nome": resultado[0],  # ✅ aqui!
-            "cargo": resultado[2],
-            "codigo_sala": resultado[3],  # ✅ padronize o nome como está no frontend
-            "email": usuario.email
+            "nome": resultado[0],
+            "email": resultado[1],
+            "cargo": resultado[3],
+            "codigo_sala": resultado[4]
         }
 
-    raise HTTPException(status_code=401, detail="Email ou senha inválidos.")
-
+    raise HTTPException(status_code=401, detail="Usuário ou senha inválidos.")
 
 @app.get("/alunos/{codigo_sala}")
 def listar_alunos_por_sala(codigo_sala: str):

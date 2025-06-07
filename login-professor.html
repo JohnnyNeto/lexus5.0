@@ -27,17 +27,15 @@
             border-radius: 10px;
             overflow: hidden;
             width: 90%;
-            max-width: 1000px;
-            height: 600px;
-            /* NOVO: altura fixa */
+            max-width: 1100px;
+            height: 650px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
         
         .left {
-            background-color: #3c2a7c;
+            background-color: #1B4F72;
             color: white;
             flex: 7;
-            /* NOVO: 70% */
             padding: 40px 20px;
             text-align: center;
             position: relative;
@@ -45,15 +43,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-        }
-        
-        .left-phrase {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 30px;
-            padding: 0 10px;
-            line-height: 1.4;
-            margin-top: 10px;
         }
         
         .left .prof-img {
@@ -114,29 +103,52 @@
             cursor: not-allowed;
         }
         
+        .enabled-button {
+            width: 100%;
+            background: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+        }
+        
+        .enabled-button:hover {
+            background: #1B4F72;
+        }
+        
+        .link-codigo {
+            color: #226680;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
         .generate-button {
             width: 100%;
-            background-color: #3c2a7c;
+            background: #226680;
             color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+        }
+        
+        .generate-button:hover {
+            background: #1B4F72;
         }
         
         .generate-button:disabled {
             background-color: #888;
             cursor: not-allowed;
-        }
-        
-        #btnIrHome {
-            width: 100%;
-            background: #3c2a7c;
-            color: #fff;
-            display: none;
-        }
-        
-        .codigo-gerado {
-            font-weight: bold;
-            color: green;
-            margin-bottom: 10px;
-            text-align: center;
         }
         
         @media (max-width: 768px) {
@@ -156,6 +168,11 @@
                 bottom: auto;
                 margin-top: 20px;
             }
+            #mostrarCodigo {
+                display: block;
+                text-align: center;
+                margin: 0 auto 20px auto;
+            }
         }
     </style>
 </head>
@@ -171,129 +188,106 @@
         <div class="right">
             <img class="logo-img" src="images/lexus-preto.png" alt="Logo Lexus" />
 
-            <!-- Campo usuário/email para login -->
-            <label for="email">Usuário ou e-mail</label>
-            <input type="email" id="email" placeholder="Digite seu usuário ou e-mail" />
+            <!-- Login Section -->
+            <div id="loginSection">
+                <label for="identificador">Usuário ou e-mail</label>
+                <input type="text" id="identificador" placeholder="Digite seu usuário ou e-mail" />
 
-            <!-- Campo código senha -->
-            <label for="senha">Código</label>
-            <input type="password" id="senha" placeholder="Digite o código" />
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" placeholder="Digite sua Senha" />
 
-            <button class="disabled-button" disabled>Entrar</button>
+                <button id="btnEntrar" class="disabled-button" disabled>Entrar</button>
 
-            <a class="link-codigo" id="mostrarCodigo" style="margin-bottom:20px; display:inline-block; cursor:pointer; color:#3c2a7c; text-align:center;">🔐 Criar código</a>
 
-            <div class="codigo-section" id="codigoSection" style="display:none;">
-                <label for="usuarioNome">Nome de usuário</label>
-                <input type="text" id="usuarioNome" placeholder="Digite seu nome de usuário" />
+                <a class="link-codigo" id="mostrarCodigo" style="display:block; text-align:center; margin: 0 auto 20px auto; cursor:pointer; color:#226680;">Cadastrar</a>
 
-                <label for="usuarioEmail">E-mail</label>
-                <input type="email" id="usuarioEmail" placeholder="Digite seu e-mail" />
 
-                <button class="generate-button" id="gerarCodigoBtn" disabled>Gerar Código</button>
-                <div class="codigo-gerado" id="codigoGerado"></div>
-                <button id="btnIrHome">Continuar</button>
             </div>
+            <!-- Cadastro de Professor (sem campo de código da turma) -->
+            <div class="codigo-section" id="codigoSection" style="display:none;">
+                <label for="nomeProfessor">Nome de usuário</label>
+                <input type="text" id="nomeProfessor" placeholder="Digite seu nome de usuário" />
+
+                <label for="emailProfessor">E-mail</label>
+                <input type="email" id="emailProfessor" placeholder="Digite seu e-mail" />
+
+                <label for="senhaProfessor">Senha</label>
+                <input type="password" id="senhaProfessor" placeholder="Digite sua senha" />
+
+                <button id="botaoCadastrarProf" class="disabled-button" disabled>Cadastrar</button>
+
+                <p class="success-message" id="mensagemSucessoProf" style="display: none;">✅ Conta criada com sucesso!</p>
+                <p class="error-message" id="mensagemErroProf" style="display: none;">❌ Ocorreu um erro. Verifique os dados.</p>
+
+                <div class="codigo-gerado" id="codigoGerado"></div>
+                <button id="btnFazerLogin" style="display: none;">Fazer Login</button>
+
+            </div>
+
         </div>
     </div>
 
     <script>
+        // Seções e elementos principais
         const mostrarCodigo = document.getElementById("mostrarCodigo");
         const codigoSection = document.getElementById("codigoSection");
-        const usuarioNome = document.getElementById("usuarioNome");
-        const usuarioEmail = document.getElementById("usuarioEmail");
-        const gerarCodigoBtn = document.getElementById("gerarCodigoBtn");
-        const codigoGerado = document.getElementById("codigoGerado");
-        const btnIrHome = document.getElementById("btnIrHome");
+        const loginSection = document.getElementById("loginSection");
 
-        const loginEmail = document.getElementById("email");
+        // Campos de login
+        const loginIdentificador = document.getElementById("identificador");
         const loginSenha = document.getElementById("senha");
-        const btnEntrar = document.querySelector("button");
+        const btnEntrar = document.getElementById("btnEntrar");
 
+        // Campos do cadastro de professor (novo estilo)
+        const nomeProfessor = document.getElementById("nomeProfessor");
+        const emailProfessor = document.getElementById("emailProfessor");
+        const senhaProfessor = document.getElementById("senhaProfessor");
+        const botaoCadastrarProf = document.getElementById("botaoCadastrarProf");
+        const sucessoProf = document.getElementById("mensagemSucessoProf");
+        const erroProf = document.getElementById("mensagemErroProf");
+        const codigoGerado = document.getElementById("codigoGerado");
+        const btnFazerLogin = document.getElementById("btnFazerLogin");
+
+        // Exibe o cadastro ao clicar em "Cadastrar"
         mostrarCodigo.addEventListener("click", () => {
+            loginSection.style.display = "none";
             codigoSection.style.display = "block";
         });
 
-        function validarCamposGerarCodigo() {
-            const nomeValido = usuarioNome.value.trim().length >= 3;
-            const email = usuarioEmail.value.trim();
-            const emailValido = email.includes("@") && email.includes(".");
-            gerarCodigoBtn.disabled = !(nomeValido && emailValido);
-            codigoGerado.textContent = "";
-            btnIrHome.style.display = "none";
-        }
-
-        usuarioNome.addEventListener("input", validarCamposGerarCodigo);
-        usuarioEmail.addEventListener("input", validarCamposGerarCodigo);
-
-        function gerarCodigoUnico() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            let codigo = "";
-            for (let i = 0; i < 8; i++) {
-                codigo += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return codigo;
-        }
-
-        gerarCodigoBtn.addEventListener("click", async () => {
-            const nome = usuarioNome.value.trim();
-            const email = usuarioEmail.value.trim();
-            const senha = gerarCodigoUnico();
-
-            try {
-                const response = await fetch("http://localhost:8000/cadastrar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        nome,
-                        email,
-                        senha,
-                        cargo: "professor"
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || "Erro ao cadastrar.");
-                }
-
-                localStorage.setItem("email", email);
-                localStorage.setItem("codigo_sala", data.codigo_sala);
-
-                codigoGerado.style.display = "block";
-                codigoGerado.textContent = `Código gerado: ${senha}`;
-                btnIrHome.style.display = "block";
-                gerarCodigoBtn.disabled = true;
-            } catch (e) {
-                alert(`❌ ${e.message}`);
-            }
-        });
-
-        btnIrHome.addEventListener("click", () => {
-            window.location.href = "home.html";
-        });
-
-        // LOGIN ------------------------
+        // Validação do login
         function validarLogin() {
-            const emailValido = loginEmail.value.trim().length > 0;
-            const senhaValida = loginSenha.value.trim().length > 0;
-            btnEntrar.disabled = !(emailValido && senhaValida);
-            btnEntrar.classList.toggle("disabled-button", btnEntrar.disabled);
+            const idValido = loginIdentificador.value.trim().length > 0;
+            const senhaValida = loginSenha.value.trim().length >= 6;
+
+            if (idValido && senhaValida) {
+                btnEntrar.disabled = false;
+                btnEntrar.classList.remove("disabled-button");
+                btnEntrar.classList.add("enabled-button");
+            } else {
+                btnEntrar.disabled = true;
+                btnEntrar.classList.remove("enabled-button");
+                btnEntrar.classList.add("disabled-button");
+            }
         }
 
-        loginEmail.addEventListener("input", validarLogin);
+        loginIdentificador.addEventListener("input", validarLogin);
         loginSenha.addEventListener("input", validarLogin);
 
-        btnEntrar.addEventListener("click", async () => {
-            const email = loginEmail.value.trim();
+        // Envia login
+        btnEntrar.addEventListener("click", async() => {
+            const identificador = loginIdentificador.value.trim();
             const senha = loginSenha.value.trim();
 
             try {
                 const response = await fetch("http://localhost:8000/login", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, senha })
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        identificador,
+                        senha
+                    })
                 });
 
                 const data = await response.json();
@@ -306,18 +300,82 @@
                     alert("Apenas professores podem acessar por aqui.");
                     return;
                 }
-                
+
                 localStorage.setItem("nome", data.nome);
                 localStorage.setItem("email", data.email);
                 localStorage.setItem("codigo_sala", data.codigo_sala);
 
                 window.location.href = "home.html";
+
+
             } catch (e) {
                 alert(`❌ ${e.message}`);
             }
         });
-    </script>
 
+        // Validação do cadastro do professor
+        function validarCamposCadastroProfessor() {
+            const valido =
+                nomeProfessor.value.trim().length >= 3 &&
+                emailProfessor.value.includes("@") &&
+                emailProfessor.value.includes(".") &&
+                senhaProfessor.value.trim().length >= 6;
+
+            if (valido) {
+                botaoCadastrarProf.disabled = false;
+                botaoCadastrarProf.classList.remove("disabled-button");
+                botaoCadastrarProf.classList.add("enabled-button");
+            } else {
+                botaoCadastrarProf.disabled = true;
+                botaoCadastrarProf.classList.remove("enabled-button");
+                botaoCadastrarProf.classList.add("disabled-button");
+            }
+        }
+
+        nomeProfessor.addEventListener("input", validarCamposCadastroProfessor);
+        emailProfessor.addEventListener("input", validarCamposCadastroProfessor);
+        senhaProfessor.addEventListener("input", validarCamposCadastroProfessor);
+
+        // Envia o cadastro do professor
+        botaoCadastrarProf.addEventListener("click", async() => {
+            sucessoProf.style.display = "none";
+            erroProf.style.display = "none";
+            codigoGerado.textContent = "";
+            btnFazerLogin.style.display = "none";
+
+            try {
+                const response = await fetch("http://localhost:8000/cadastrar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        nome: nomeProfessor.value.trim(),
+                        email: emailProfessor.value.trim(),
+                        senha: senhaProfessor.value.trim(),
+                        cargo: "professor"
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || "Erro desconhecido");
+
+                localStorage.setItem("email", emailProfessor.value.trim());
+                localStorage.setItem("codigo_sala", data.codigo_sala);
+
+                alert(` Conta criada com sucesso!\nCódigo da Turma: ${data.codigo_sala}`);
+                btnFazerLogin.style.display = "block";
+
+
+                botaoCadastrarProf.disabled = true;
+                botaoCadastrarProf.classList.remove("enabled-button");
+                botaoCadastrarProf.classList.add("disabled-button");
+            } catch (e) {
+                erroProf.textContent = `❌ ${e.message}`;
+                erroProf.style.display = "block";
+            }
+        });
+    </script>
 
 </body>
 
