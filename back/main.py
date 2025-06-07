@@ -251,28 +251,32 @@ def cadastrar_usuario(usuario: Usuario):
             raise HTTPException(status_code=500, detail="Erro ao cadastrar.")
 
 
-# Rota: Login
-# Rota: Login
 @app.post("/login")
 def login(usuario: LoginRequest):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT nome, senha, cargo, sala FROM usuarios WHERE email = ?",
-            (usuario.email,)
+            """
+            SELECT nome, senha, cargo, sala, email
+            FROM usuarios
+            WHERE email = ? OR nome = ?
+            """,
+            (usuario.identificador, usuario.identificador)
         )
         resultado = cursor.fetchone()
 
     if resultado and resultado[1] == usuario.senha:
         return {
             "mensagem": f"Login bem-sucedido. Bem-vindo, {resultado[0]}!",
-            "nome": resultado[0],  # ✅ aqui!
+            "nome": resultado[0],
             "cargo": resultado[2],
-            "codigo_sala": resultado[3],  # ✅ padronize o nome como está no frontend
-            "email": usuario.email
+            "codigo_sala": resultado[3],
+            "email": resultado[4]
         }
 
-    raise HTTPException(status_code=401, detail="Email ou senha inválidos.")
+    raise HTTPException(status_code=401, detail="Email ou senha incorretos")
+   
+
 
 
 @app.get("/alunos/{codigo_sala}")
