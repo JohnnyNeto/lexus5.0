@@ -5,6 +5,7 @@ import uuid
 import sqlite3
 import random
 import string
+from fastapi import Request
 from fastapi import FastAPI, HTTPException, UploadFile, Form, File, WebSocket, WebSocketDisconnect, Path, BackgroundTasks
 from pydantic import BaseModel, EmailStr, field_validator
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,9 +13,13 @@ from typing import Literal
 from models import SessionLocal, Message
 from datetime import datetime
 
+from fastapi.staticfiles import StaticFiles
+
+
+
 
 app = FastAPI()
-
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 DB_FILE = "usuarios.db"
 
 # Middleware CORS
@@ -245,31 +250,29 @@ def cadastrar_usuario(usuario: Usuario):
             raise HTTPException(status_code=500, detail="Erro ao cadastrar.")
 
 
-# Rota: Login com nome OU e-mail
+# Rota: Login
+# Rota: Login
 @app.post("/login")
 def login(usuario: LoginRequest):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            """
-            SELECT nome, email, senha, cargo, sala
-            FROM usuarios
-            WHERE email = ? OR nome = ?
-            """,
-            (usuario.identificador, usuario.identificador)
+            "SELECT nome, senha, cargo, sala FROM usuarios WHERE email = ?",
+            (usuario.email,)
         )
         resultado = cursor.fetchone()
 
-    if resultado and resultado[2] == usuario.senha:
+    if resultado and resultado[1] == usuario.senha:
         return {
             "mensagem": f"Login bem-sucedido. Bem-vindo, {resultado[0]}!",
-            "nome": resultado[0],
-            "email": resultado[1],
-            "cargo": resultado[3],
-            "codigo_sala": resultado[4]
+            "nome": resultado[0],  # ✅ aqui!
+            "cargo": resultado[2],
+            "codigo_sala": resultado[3],  # ✅ padronize o nome como está no frontend
+            "email": usuario.email
         }
 
-    raise HTTPException(status_code=401, detail="Usuário ou senha inválidos.")
+    raise HTTPException(status_code=401, detail="Email ou senha inválidos.")
+
 
 @app.get("/alunos/{codigo_sala}")
 def listar_alunos_por_sala(codigo_sala: str):
@@ -293,65 +296,67 @@ def listar_alunos_por_sala(codigo_sala: str):
 
 
 # Rota: Criar publicação
+
 @app.post("/publicar")
 async def publicar(
+    request: Request,
     email_aluno: str = Form(...),
     codigo_sala: str = Form(...),
     tipo: Literal["podcast", "fotografia", "tematica"] = Form(...),
     titulo: str = Form(...),
     conteudo: str = Form(...),
-    imagem: UploadFile = File(None)
+    imagem: UploadFile | str | None = Form(None)
 ):
     try:
-        # Cria o diretório "uploads" se ele não existir
         os.makedirs("uploads", exist_ok=True)
 
-        # Lógica para salvar imagem com nome único, se houver
+        # Detectar se o campo imagem é UploadFile (foto) ou string (link)
         caminho_arquivo = None
-        if imagem:
-            nome_unico = f"{uuid.uuid4().hex}_{imagem.filename}"  # Nome único
-            caminho_arquivo = f"uploads/{nome_unico}"
-            with open(caminho_arquivo, "wb") as buffer:
+        if tipo == "fotografia" and isinstance(imagem, UploadFile):
+            nome_unico = f"{uuid.uuid4().hex}_{imagem.filename}"
+            caminho_arquivo = nome_unico  # SALVA SÓ O NOME NO BANCO!
+            with open(f"uploads/{nome_unico}", "wb") as buffer:
                 shutil.copyfileobj(imagem.file, buffer)
+                print("📁 Arquivo salvo em: uploads/" + nome_unico)
 
-        # Log para depuração
-        print(f"Procurando aluno com email: {email_aluno}")
 
-        # Verificar se o email do aluno é válido
+        elif tipo in ["podcast", "tematica"] and isinstance(imagem, str):
+            caminho_arquivo = imagem.strip()  # link do podcast/temática
+        else:
+            caminho_arquivo = None
+
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email_aluno,))
             aluno = cursor.fetchone()
 
-            print(f"Resultado da busca por email: {aluno}")
-
             if aluno is None:
                 raise HTTPException(status_code=400, detail="Aluno não encontrado com este email.")
 
-            # Inserir a publicação no banco de dados
             cursor.execute(
                 "INSERT INTO publicacoes (id_aluno, codigo_sala, tipo, titulo, conteudo, imagem) "
                 "VALUES (?, ?, ?, ?, ?, ?)",
                 (aluno[0], codigo_sala, tipo, titulo, conteudo, caminho_arquivo)
             )
             conn.commit()
+            url_imagem = f"http://localhost:8000/uploads/{caminho_arquivo}" if caminho_arquivo else None
 
         return {
-            "mensagem": "Publicação recebida com sucesso!",
-            "dados": {
-                "email_aluno": email_aluno,
-                "codigo_sala": codigo_sala,
-                "tipo": tipo,
-                "titulo": titulo,
-                "conteudo": conteudo,
-                "imagem": nome_unico if imagem else None
+              "mensagem": "Publicação enviada com sucesso!",
+    "url_imagem": url_imagem,
+    "dados": {
+        "email_aluno": email_aluno,
+        "codigo_sala": codigo_sala,
+        "tipo": tipo,
+        "titulo": titulo,
+        "conteudo": conteudo,
+        "imagem": caminho_arquivo
+                
             }
         }
 
     except Exception as e:
-        # Exibir a exceção para análise do erro
         raise HTTPException(status_code=500, detail=f"Erro ao salvar publicação: {str(e)}")
-
 
 # Rota: Listar publicações de uma sala
 @app.get("/publicacoes/{codigo_sala}")

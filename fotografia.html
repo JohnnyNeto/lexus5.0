@@ -330,7 +330,45 @@
         }
 
         function enviarRedacao() {
-            alert("Redação enviada com sucesso!");
+            const titulo = document.querySelector("input[type='text']").value.trim();
+            const conteudo = document.getElementById("textoRedacao").value.trim();
+            const imagemInput = document.getElementById("upload");
+            const imagem = imagemInput.files[0];
+
+            const email_aluno = localStorage.getItem("email");
+            const codigo_sala = localStorage.getItem("codigo_sala");
+
+            if (!titulo || !conteudo) {
+                alert("Por favor, preencha o título e o texto.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("email_aluno", email_aluno);
+            formData.append("codigo_sala", codigo_sala);
+            formData.append("tipo", "fotografia");
+            formData.append("titulo", titulo);
+            formData.append("conteudo", conteudo);
+            if (imagem) formData.append("imagem", imagem);
+
+            fetch("http://localhost:8000/publicar", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("Erro ao enviar a produção.");
+                    return res.json();
+                })
+                .then(data => {
+                    alert("Produção enviada com sucesso!");
+
+                    // Redireciona para a home do aluno após envio
+                    window.location.href = "home-aluno.html";
+                })
+                .catch(err => {
+                    console.error("Erro:", err);
+                    alert("Ocorreu um erro ao enviar sua produção.");
+                });
         }
 
         const texto = document.getElementById("textoRedacao");

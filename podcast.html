@@ -301,76 +301,113 @@
             </div>
         </div>
 
+        '
         <div class="upload-box">
-            <label for="upload" class="upload-label">
-        <strong>🎙️</strong><br>
-        Upload do Podcast
-      </label>
-            <input type="file" id="upload" accept="audio/*" onchange="mostrarPreview(event)">
-            <audio id="preview" class="upload-preview" controls style="display:none;"></audio>
+            <label for="linkPodcast" class="upload-label">
+        <strong>🔗</strong><br>
+        Cole o link do podcast (Spotify, SoundCloud, etc)
+    </label>
+            <input type="text" id="linkPodcast" placeholder="https://..." style="padding: 12px; font-size: 14px; width: 100%; border-radius: 8px; border: 1px solid #1B4F72;" />
         </div>
-    </div>
+        '
 
-    <script>
-        // Exemplo: Troque por lógica real com login/session/localStorage
-        const tipoUsuario = "aluno"; // ou "professor"
+        <script>
+            // Exemplo: Troque por lógica real com login/session/localStorage
+            const tipoUsuario = "aluno"; // ou "professor"
 
-        document.getElementById("logoLexus").addEventListener("click", () => {
-            if (tipoUsuario === "professor") {
-                window.location.href = "home.html";
-            } else {
-                window.location.href = "home-aluno.html";
+            document.getElementById("logoLexus").addEventListener("click", () => {
+                if (tipoUsuario === "professor") {
+                    window.location.href = "home.html";
+                } else {
+                    window.location.href = "home-aluno.html";
+                }
+            });
+
+            function mostrarPreview(event) {
+                const file = event.target.files[0];
+                const preview = document.getElementById("preview");
+                if (file) {
+                    const url = URL.createObjectURL(file);
+                    preview.src = url;
+                    preview.style.display = "block";
+                }
             }
-        });
 
-        function mostrarPreview(event) {
-            const file = event.target.files[0];
-            const preview = document.getElementById("preview");
-            if (file) {
-                const url = URL.createObjectURL(file);
-                preview.src = url;
-                preview.style.display = "block";
+            function enviarRedacao() {
+                const titulo = document.querySelector("input[type='text']").value.trim();
+                const conteudo = document.getElementById("textoRedacao").value.trim();
+                const linkPodcast = document.getElementById("linkPodcast").value.trim();
+
+                const email_aluno = localStorage.getItem("email");
+                const codigo_sala = localStorage.getItem("codigo_sala");
+
+                if (!titulo || !conteudo || !linkPodcast) {
+                    alert("Por favor, preencha o título, o texto e o link do podcast.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("email_aluno", email_aluno);
+                formData.append("codigo_sala", codigo_sala);
+                formData.append("tipo", "podcast");
+                formData.append("titulo", titulo);
+                formData.append("conteudo", conteudo);
+                formData.append("imagem", linkPodcast); // Usamos "imagem" para guardar o link
+
+
+
+                fetch("http://localhost:8000/publicar", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Erro ao enviar a produção.");
+                        return res.json();
+                    })
+                    .then(data => {
+                        alert("Podcast enviado com sucesso!");
+                        window.location.href = "home-aluno.html";
+                    })
+                    .catch(err => {
+                        console.error("Erro:", err);
+                        alert("Ocorreu um erro ao enviar sua produção.");
+                    });
             }
-        }
 
-        function enviarRedacao() {
-            alert("Podcast enviado com sucesso!");
-        }
+            const texto = document.getElementById("textoRedacao");
+            const contador = document.getElementById("contadorPalavras");
 
-        const texto = document.getElementById("textoRedacao");
-        const contador = document.getElementById("contadorPalavras");
+            texto.addEventListener("input", () => {
+                const palavras = texto.value.trim().split(/\s+/).filter(p => p !== "");
+                contador.textContent = `${palavras.length} palavra${palavras.length !== 1 ? 's' : ''}`;
+            });
 
-        texto.addEventListener("input", () => {
-            const palavras = texto.value.trim().split(/\s+/).filter(p => p !== "");
-            contador.textContent = `${palavras.length} palavra${palavras.length !== 1 ? 's' : ''}`;
-        });
+            const perfilBtn = document.getElementById("perfilBtn");
+            const perfilDropdown = document.getElementById("perfilDropdown");
+            const produzirBtn = document.getElementById("produzirBtn");
+            const produzirDropdown = document.getElementById("produzirDropdown");
 
-        const perfilBtn = document.getElementById("perfilBtn");
-        const perfilDropdown = document.getElementById("perfilDropdown");
-        const produzirBtn = document.getElementById("produzirBtn");
-        const produzirDropdown = document.getElementById("produzirDropdown");
-
-        perfilBtn.addEventListener("click", () => {
-            const isVisible = perfilDropdown.style.display === "block";
-            perfilDropdown.style.display = isVisible ? "none" : "block";
-            produzirDropdown.style.display = "none";
-        });
-
-        produzirBtn.addEventListener("click", () => {
-            const isVisible = produzirDropdown.style.display === "block";
-            produzirDropdown.style.display = isVisible ? "none" : "block";
-            perfilDropdown.style.display = "none";
-        });
-
-        window.addEventListener("click", function(e) {
-            if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
-                perfilDropdown.style.display = "none";
-            }
-            if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
+            perfilBtn.addEventListener("click", () => {
+                const isVisible = perfilDropdown.style.display === "block";
+                perfilDropdown.style.display = isVisible ? "none" : "block";
                 produzirDropdown.style.display = "none";
-            }
-        });
-    </script>
+            });
+
+            produzirBtn.addEventListener("click", () => {
+                const isVisible = produzirDropdown.style.display === "block";
+                produzirDropdown.style.display = isVisible ? "none" : "block";
+                perfilDropdown.style.display = "none";
+            });
+
+            window.addEventListener("click", function(e) {
+                if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+                    perfilDropdown.style.display = "none";
+                }
+                if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
+                    produzirDropdown.style.display = "none";
+                }
+            });
+        </script>
 
 </body>
 

@@ -323,9 +323,9 @@
             <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
             <div class="dropdown" id="perfilDropdown">
                 <h3>👤 Perfil do Professor</h3>
-                    <p><strong>Nome:</strong> <span id="perfilNome">Carregando...</span></p>
-                    <p><strong>E-mail:</strong> <span id="perfilEmail">Carregando...</span></p>
-                    <p><strong>Código:</strong> <span id="perfilCodigo">Carregando...</span></p>
+                <p><strong>Nome:</strong> <span id="perfilNome">Carregando...</span></p>
+                <p><strong>E-mail:</strong> <span id="perfilEmail">Carregando...</span></p>
+                <p><strong>Código:</strong> <span id="perfilCodigo">Carregando...</span></p>
 
                 <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
             </div>
@@ -345,52 +345,63 @@
     <script>
         const perfilBtn = document.getElementById("perfilBtn");
         const perfilDropdown = document.getElementById("perfilDropdown");
-    
+
         perfilBtn.addEventListener("click", () => {
             const isVisible = perfilDropdown.style.display === "block";
             perfilDropdown.style.display = isVisible ? "none" : "block";
         });
-    
+
         window.addEventListener("click", function(e) {
             if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
                 perfilDropdown.style.display = "none";
             }
         });
-    
+
         function criarCard(pub) {
+            let imagemURL = "";
+
+            if (pub.tipo === "podcast") {
+                imagemURL = "images/podcast0.png"; // Imagem padrão para podcast
+            } else if (pub.tipo === "tema") {
+                imagemURL = "images/tematica.jpg"; // Imagem padrão para temática
+            } else {
+                imagemURL = pub.imagem ? `http://localhost:8000/${encodeURI(pub.imagem)}` : "";
+            }
+
             return `
-                <div class="card">
-                    <img src="${pub.imagem}" alt="Imagem da publicação ${pub.titulo}" />
-                    <div class="card-content">
-                        <div class="tag">${pub.tipo}</div>
-                        <h3>${pub.titulo}</h3>
-                        <div class="autor"><strong>Autor:</strong> ${pub.aluno}</div>
-                        <div class="data"><strong>Data:</strong> ${new Date(pub.data_criacao).toLocaleDateString()}</div>
-                        <p>${pub.conteudo}</p>
-                    </div>
-                </div>
-            `;
-        }
-    
+        <div class="card">
+            ${imagemURL ? `<img src="${imagemURL}" alt="Imagem da publicação ${pub.titulo}" />` : ""}
+            <div class="card-content">
+                <div class="tag">${pub.tipo}</div>
+                <h3>${pub.titulo}</h3>
+                <div class="autor"><strong>Autor:</strong> ${pub.aluno}</div>
+                <div class="data"><strong>Data:</strong> ${new Date(pub.data_criacao).toLocaleDateString("pt-BR")}</div>
+                <p>${pub.conteudo}</p>
+            </div>
+        </div>
+    `;
+}
+
+
         function abrirChat(nomeAluno) {
             const url = new URL(window.location.origin + "/chat.html");
             url.searchParams.set("aluno", nomeAluno);
             window.location.href = url.toString();
         }
-    
+
         function avaliarRedacao(id) {
             alert(`Avaliar redação: ${id}`);
         }
-    
+
         document.addEventListener("DOMContentLoaded", () => {
             const nome = localStorage.getItem("nome");
             const email = localStorage.getItem("email");
             const codigoSala = localStorage.getItem("codigo_sala");
-        
+
             if (nome) document.getElementById("perfilNome").textContent = nome;
             if (email) document.getElementById("perfilEmail").textContent = email;
             if (codigoSala) document.getElementById("perfilCodigo").textContent = codigoSala;
-        
+
             if (codigoSala) {
                 // 🔹 Carregar redações
                 fetch(`http://localhost:8000/publicacoes/${codigoSala}`)
@@ -406,14 +417,14 @@
                     .catch(error => {
                         console.error("Erro ao carregar publicações:", error);
                     });
-                
+
                 // 🔹 Carregar alunos
                 fetch(`http://localhost:8000/alunos/${codigoSala}`)
                     .then(response => response.json())
                     .then(alunos => {
                         const alunosList = document.getElementById("alunosList");
                         alunosList.innerHTML = "";
-                    
+
                         alunos.forEach((aluno, index) => {
                             const imagem = `images/perfil${(index % 5) + 1}.png`;
                             const card = document.createElement("div");

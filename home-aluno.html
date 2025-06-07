@@ -349,8 +349,16 @@
                     card.className = "card";
 
                     const img = document.createElement("img");
-                    img.src = `images/${producao.imagem}`;
-                    img.alt = producao.titulo;
+
+                    if (producao.tipo === "podcast") {
+                        img.src = "images/podcast0.png";
+                    } else if (producao.tipo === "tema") {
+                        img.src = "images/tematica.jpg";
+                    } else {
+                        img.src = producao.imagem ? `http://localhost:8000/${encodeURI(producao.imagem)}` : "";
+                    }
+
+                    img.alt = producao.titulo || "Imagem da produção";
 
                     const cardContent = document.createElement("div");
                     cardContent.className = "card-content";
@@ -413,4 +421,5 @@
     </script>
 
 </body>
+
 </html>

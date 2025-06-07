@@ -59,6 +59,20 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            position: relative;
+        }
+        
+        .btn-voltar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .btn-voltar img {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
         }
         
         .logo-img {
@@ -178,8 +192,10 @@
         </div>
 
         <div class="right">
+
             <img class="logo-img" src="images/lexus-preto.png" alt="Logo Lexus" />
             <div class="divider"></div>
+
 
             <!-- Login Section -->
             <div id="loginSection">
@@ -195,7 +211,14 @@
             </div>
 
             <!-- Cadastro Section -->
+
+
             <div class="codigo-section" id="codigoSection">
+                <a href="login-aluno.html" class="btn-voltar">
+                    <img src="images/voltar.png" alt="Voltar" />
+                </a>
+
+
                 <label for="nomeUsuario">Nome de usuário</label>
                 <input type="text" id="nomeUsuario" placeholder="Digite seu nome de usuário" />
 
