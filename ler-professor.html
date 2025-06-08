@@ -132,11 +132,15 @@
             border-radius: 14px;
             box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
             align-items: flex-start;
+            gap: 20px;
+            /* adiciona um espaço entre texto e imagem */
         }
         
         .post-text {
             max-width: 600px;
-            flex: 1;
+            flex: 1 1 400px;
+            /* texto ocupa o espaço que sobrar, mínimo 400px */
+            min-width: 300px;
             padding-right: 20px;
             text-align: justify;
             word-break: break-word;
@@ -225,7 +229,8 @@
             <a href="chat.html">Chat</a>
             <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
             <div class="dropdown" id="perfilDropdown">
-                <h3>👤 Meu perfil</h3>
+                <h3>👤Meu perfil</h3>
+
                 <p><strong>Nome:</strong> <span id="perfilNome">carregando...</span></p>
                 <p><strong>E-mail:</strong> <span id="perfilEmail">carregando...</span></p>
                 <p><strong>Código:</strong> <span id="perfilSala">carregando...</span></p>
@@ -250,8 +255,7 @@
         <div class="post-image">
             <img src="" alt="" />
             <div class="debate-button-container">
-                <button class="debate-button" id="btnDebater">Debater</button>
-
+                <button class="debate-button">Debater</button>
 
             </div>
 
@@ -261,13 +265,6 @@
     <script>
         const perfilBtn = document.getElementById("perfilBtn");
         const perfilDropdown = document.getElementById("perfilDropdown");
-        const urlParams = new URLSearchParams(window.location.search);
-        const destinatario = urlParams.get("destinatario");
-
-        if (destinatario) {
-            // Aqui você pode pré-carregar o contato no chat com esse email
-            console.log("Iniciar conversa com:", destinatario);
-        }
 
 
         perfilBtn.addEventListener("click", () => {
@@ -297,25 +294,20 @@
 
                 const publicacao = await res.json();
 
-                // ✅ AQUI está o botão funcionando com o email
-                document.getElementById("btnDebater").addEventListener("click", () => {
-                    const emailAutor = publicacao.email;
-                    window.location.href = `chat-aluno.html?destinatario=${encodeURIComponent(emailAutor)}`;
-                });
-
-                // ⬇️ AQUI continua o código de exibição da publicação:
                 const tituloContainer = document.querySelector(".post-text h2");
 
+                // Se existir título, exibe ele acima do nome
                 if (publicacao.titulo && publicacao.titulo.trim() !== "") {
                     const tituloEl = document.createElement("div");
                     tituloEl.textContent = publicacao.titulo;
-                    tituloEl.style.fontSize = "40px";
+                    tituloEl.style.fontSize = "40px;";
                     tituloEl.style.fontWeight = "700";
                     tituloEl.style.marginBottom = "6px";
                     tituloEl.style.color = "#1B4F72";
                     tituloContainer.appendChild(tituloEl);
                 }
 
+                // Depois o nome do aluno
                 const nomeEl = document.createElement("div");
                 nomeEl.textContent = publicacao.aluno;
                 nomeEl.style.fontSize = "20px";
@@ -328,7 +320,6 @@
                     month: "long",
                     year: "numeric"
                 });
-
                 document.querySelector(".post-description").textContent = publicacao.conteudo;
 
                 let imagemURL = "";
@@ -349,8 +340,8 @@
                 console.error("Erro ao carregar publicação:", error);
                 alert("Erro ao carregar os dados da publicação.");
             }
-        }
 
+        }
         // Recupera os dados salvos no localStorage
         const nomeUsuario = localStorage.getItem("nome");
         const emailUsuario = localStorage.getItem("email");
@@ -368,9 +359,9 @@
         });
 
         // Redirecionamento dinâmico da logo
-        const tipoUsuario = "aluno"; // "professor" se necessário
+        const tipoUsuario = "professor";
         document.getElementById("logoLexus").addEventListener("click", () => {
-            window.location.href = tipoUsuario === "professor" ? "home.html" : "home-aluno.html";
+            window.location.href = tipoUsuario === "professor" ? "./home.html" : "./home-aluno.html";
         });
 
         // 👇 ESTA LINHA FAZ TUDO FUNCIONAR

@@ -327,7 +327,7 @@
             <a href="chat.html">Chat</a>
             <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
             <div class="dropdown" id="perfilDropdown">
-                <h3>👤 Perfil do Professor</h3>
+                <h3>👤 Meu perfil</h3>
                 <p><strong>Nome:</strong> <span id="perfilNome">Carregando...</span></p>
                 <p><strong>E-mail:</strong> <span id="perfilEmail">Carregando...</span></p>
                 <p><strong>Código:</strong> <span id="perfilCodigo">Carregando...</span></p>
@@ -374,7 +374,8 @@
             }
 
             return `
-        <a href="ler.html?id=${pub.id}" style="text-decoration: none; color: inherit;">
+        <a href="ler-professor.html?id=${pub.id}" style="text-decoration: none; color: inherit;">
+
             <div class="card">
                 ${imagemURL ? `<img src="${imagemURL}" alt="${pub.titulo}" />` : ""}
                 <div class="card-content">

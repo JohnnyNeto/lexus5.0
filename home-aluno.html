@@ -385,7 +385,8 @@
 
                 producoes.forEach(producao => {
                     const cardLink = document.createElement("a");
-                    cardLink.href = "ler.html";
+                    cardLink.href = `ler.html?id=${producao.id}`;
+
                     cardLink.style.textDecoration = "none";
                     cardLink.style.color = "inherit";
 

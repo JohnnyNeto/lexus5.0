@@ -12,6 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Literal
 from models import SessionLocal, Message
 from datetime import datetime
+from fastapi import Query
+
 
 from fastapi.staticfiles import StaticFiles
 
@@ -455,11 +457,12 @@ def get_publicacao_por_id(id: int):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT p.id, u.nome, p.titulo, p.conteudo, p.tipo, p.imagem, p.data_criacao
+            SELECT p.id, u.nome, p.titulo, p.conteudo, p.tipo, p.imagem, p.data_criacao, u.email
             FROM publicacoes p
             JOIN usuarios u ON p.id_aluno = u.id
             WHERE p.id = ?
-        """, (id,))
+            """, (id,))
+
         row = cursor.fetchone()
 
         if not row:
@@ -472,8 +475,10 @@ def get_publicacao_por_id(id: int):
             "conteudo": row[3],
             "tipo": row[4],
             "imagem": row[5],
-            "data_criacao": row[6]
-        }
+            "data_criacao": row[6],
+            "email": row[7]  # ✅ agora vem do SELECT
+}
+
 
 
 # Rota: Listar publicações de uma sala
@@ -482,7 +487,7 @@ def listar_publicacoes(codigo_sala: str):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT u.nome, p.tipo, p.titulo, p.conteudo, p.imagem, p.data_criacao
+            SELECT p.id, u.nome, p.tipo, p.titulo, p.conteudo, p.imagem, p.data_criacao
             FROM publicacoes p
             JOIN usuarios u ON p.id_aluno = u.id
             WHERE p.codigo_sala = ?
@@ -492,6 +497,7 @@ def listar_publicacoes(codigo_sala: str):
 
     return [
         {
+            "id": id_,
             "aluno": nome,
             "tipo": tipo,
             "titulo": titulo,
@@ -499,8 +505,11 @@ def listar_publicacoes(codigo_sala: str):
             "imagem": imagem,
             "data_criacao": data
         }
-        for nome, tipo, titulo, conteudo, imagem, data in dados
+        for id_, nome, tipo, titulo, conteudo, imagem, data in dados
     ]
+
+
+
 
 
 @app.patch("/publicacoes/{publicacao_id}/nota")
@@ -594,3 +603,6 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         manager.disconnect(client_id)
         await manager.broadcast(f"Client #{client_id} has left the chat")
         await manager.send_user_list()
+        
+    
+

@@ -454,6 +454,11 @@
             }]
         }];
 
+        const params = new URLSearchParams(window.location.search);
+        const destinatario = params.get("destinatario");
+        const emailUsuario = localStorage.getItem("email");
+        const nomeUsuario = localStorage.getItem("nome");
+
         const contactList = document.getElementById('contactList');
         const chatMessages = document.getElementById('chatMessages');
         const chatHeader = document.getElementById('chatHeader');
