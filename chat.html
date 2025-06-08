@@ -72,7 +72,6 @@
             border-radius: 50%;
             object-fit: cover;
             cursor: pointer;
-            border: 2px solid white;
             transition: transform 0.3s;
         }
         
@@ -178,12 +177,8 @@
             border-radius: 50%;
             object-fit: cover;
             margin-right: 15px;
-            border: 2px solid transparent;
             transition: border-color 0.2s;
-        }
-        
-        .contact.active img {
-            border-color: white;
+            border: 2px solid #226680;
         }
         
         .contact-info {
@@ -227,7 +222,6 @@
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid white;
         }
         
         .chat-header .chat-contact-name {
@@ -360,7 +354,7 @@
         <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" id="logoLexus" />
         <div class="nav-links">
             <a href="chat.html">Chat</a>
-            <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+            <img src="images/noprofile.jpg" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
             <div class="dropdown" id="perfilDropdown">
                 <h3>👤 Perfil do Professor</h3>
                 <p><strong>Nome:</strong> João da Silva</p>
@@ -376,7 +370,7 @@
             <div class="sidebar-header">Contatos</div>
             <div class="contact-list" id="contactList">
                 <div class="contact" onclick="selectContact('', 'images/perfil1.png')">
-                    <img src="images/perfil1.png" alt="Maria Eduarda" />
+                    <img src="images/noProfile.jpg" alt="Sem foto de perfil" />
                     <div class="contact-info">
                         <div class="contact-name">Maria Eduarda</div>
                         <div class="contact-last-message">De nada!</div>
@@ -411,7 +405,7 @@
             const contacts = [{
                 id: 1,
                 name: 'Maria Eduarda',
-                avatar: 'images/perfil1.png',
+                avatar: 'images/noprofile.jpg',
                 lastMessage: 'Obrigada!',
                 messages: [{
                     text: 'Obrigado!',

@@ -70,7 +70,6 @@
             border-radius: 50%;
             object-fit: cover;
             cursor: pointer;
-            border: 2px solid white;
             transition: transform 0.3s;
         }
         
@@ -325,7 +324,8 @@
         <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" onclick="window.location.href='home.html'" />
         <div class="nav-links">
             <a href="chat.html">Chat</a>
-            <img src="images/perfil2.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+
+            <h4><img src="images\noProfile.jpg" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" /></h4>
             <div class="dropdown" id="perfilDropdown">
                 <h3>👤 Meu perfil</h3>
                 <p><strong>Nome:</strong> <span id="perfilNome">Carregando...</span></p>
@@ -448,7 +448,8 @@ fetch(`http://localhost:8000/alunos/${codigoSala}`)
         }
 
         alunos.forEach((aluno, index) => {
-            const imagem = `images/perfil${(index % 5) + 1}.png`;
+            const imagem = `images/noProfile.jpg`;
+
             const card = document.createElement("div");
             card.className = "aluno-card";
             card.innerHTML = `
