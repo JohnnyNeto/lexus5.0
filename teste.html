@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat com WebSocket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+    <h1>Chat FastAPI WebSocket</h1>
+    <div>
+        <label>Seu email:</label>
+        <input type="text" id="remetente" class="form-control">
+        <label>Email do destinatário:</label>
+        <input type="text" id="destinatario" class="form-control">
+    </div>
+
+    <form onsubmit="return sendMessage(event)">
+        <input type="text" class="form-control" id="messageText" placeholder="Digite a mensagem" autocomplete="off"/>
+        <button class="btn btn-primary mt-2">Enviar</button>
+    </form>
+    <ul id="messages" class="mt-4 list-group"></ul>
+
+
+    
+
+
+</div>
+
+<script>
+    const client_id = Date.now();  // Simula um ID único
+    const ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+
+    ws.onmessage = function(event) {
+        const messages = document.getElementById("messages");
+        const li = document.createElement("li");
+        li.className = "list-group-item";
+        li.textContent = event.data;
+        messages.appendChild(li);
+    };
+
+    function sendMessage(event) {
+        const remetente = document.getElementById("remetente").value;
+        const destinatario = document.getElementById("destinatario").value;
+        const mensagem = document.getElementById("messageText").value;
+        
+        const payload = {
+            remetente: remetente,
+            destinatario: destinatario,
+            mensagem: mensagem
+        };
+    
+        ws.send(JSON.stringify(payload));  // <--- Aqui está o fix
+    
+        document.getElementById("messageText").value = '';
+        event.preventDefault();
+        return false;
+    }
+
+</script>
+</body>
+</html>

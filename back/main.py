@@ -138,6 +138,15 @@ def inicializar_banco():
 def startup_event():
     inicializar_banco()
 
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 # Modelos
 class Usuario(BaseModel):
     nome: str
@@ -153,10 +162,27 @@ class Usuario(BaseModel):
         return v
 
 
+class MessageCreate(BaseModel):
+    sender_id: int
+    receiver_id: int | None
+    content: str
+
+
+class MessageOut(BaseModel):
+    id: int
+    sender_id: int
+    receiver_id: int | None
+    content: str
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+
+
 class LoginRequest(BaseModel):
     identificador: str  # pode ser email ou nome
     senha: str
-
 
 
 class Publicacao(BaseModel):
@@ -170,28 +196,22 @@ class Publicacao(BaseModel):
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: dict[int, WebSocket] = {}
+        self.active_connections: list[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, client_id: int):
+    async def connect(self, websocket: WebSocket):
         await websocket.accept()
-        self.active_connections[client_id] = websocket
+        self.active_connections.append(websocket)
 
-    def disconnect(self, client_id: int):
-        if client_id in self.active_connections:
-            del self.active_connections[client_id]
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: str, client_id: int):
-        if client_id in self.active_connections:
-            await self.active_connections[client_id].send_text(message)
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
 
     async def broadcast(self, message: str):
-        for connection in self.active_connections.values():
+        for connection in self.active_connections:
             await connection.send_text(message)
 
-    async def send_user_list(self):
-        user_list = list(self.active_connections.keys())
-        for ws in self.active_connections.values():
-            await ws.send_text(f"[USER_LIST] {user_list}")
 
     
 manager = ConnectionManager()
@@ -387,8 +407,8 @@ async def publicar_link(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao salvar publicação: {str(e)}")
 
-# Rota: Criar publicação
 
+# Rota: Criar publicação
 @app.post("/publicar")
 async def publicar(
     request: Request,
@@ -452,6 +472,7 @@ async def publicar(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao salvar publicação: {str(e)}")
 
+
 @app.get("/publicacao/{id}")
 def get_publicacao_por_id(id: int):
     with sqlite3.connect(DB_FILE) as conn:
@@ -480,7 +501,6 @@ def get_publicacao_por_id(id: int):
 }
 
 
-
 # Rota: Listar publicações de uma sala
 @app.get("/publicacoes/{codigo_sala}")
 def listar_publicacoes(codigo_sala: str):
@@ -507,9 +527,6 @@ def listar_publicacoes(codigo_sala: str):
         }
         for id_, nome, tipo, titulo, conteudo, imagem, data in dados
     ]
-
-
-
 
 
 @app.patch("/publicacoes/{publicacao_id}/nota")
@@ -564,45 +581,56 @@ def verificar_usuario_existe(email):
 
 #----------------------------------------CHAT----------------------------------------------
 
-
-
-def save_message(sender_id: int, content: str, receiver_id: int = None):
-    db = SessionLocal()
-    msg = Message(sender_id=sender_id, receiver_id=receiver_id, content=content, timestamp=datetime.utcnow())
-    db.add(msg)
-    db.commit()
-    db.close()
-
-
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await manager.connect(websocket, client_id)
-    await manager.broadcast(f"Client #{client_id} joined the chat")
-    await manager.send_user_list()
-
-    try: 
+    await manager.connect(websocket)
+    try:
         while True:
-            data = await websocket.receive_text()
+            data = await websocket.receive_json()
+            remetente = data.get("remetente")
+            destinatario = data.get("destinatario")
+            mensagem = data.get("mensagem")
 
-            # Mensagem privada
-            if data.startswith("@"):
-                try:
-                    target_id, msg = data[1:].split(":", 1)
-                    target_id = int(target_id.strip())
-                    msg = msg.strip()
-                    await manager.send_personal_message(f"[PRIVATE] From #{client_id}: {msg}", target_id)
-                    await manager.send_personal_message(f"[PRIVATE] To #{target_id}: {msg}", client_id)
-                    save_message(sender_id=client_id, receiver_id=target_id, content=msg)
-                except Exception:
-                    await manager.send_personal_message("❌ Invalid private message format. Use @<id>: <message>", client_id)
-            else:
-                await manager.send_personal_message(f"You wrote: {data}", client_id)
-                await manager.broadcast(f"Client #{client_id} says: {data}")
-                save_message(sender_id=client_id, content=data)
+            if not all([remetente, destinatario, mensagem]):
+                await websocket.send_text("Dados incompletos.")
+                continue
+
+            # Salva no banco
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO mensagens (remetente, destinatario, mensagem)
+                    VALUES (?, ?, ?)
+                """, (remetente, destinatario, mensagem))
+                conn.commit()
+
+            # Broadcast para todos os usuários conectados
+            await manager.broadcast(f"[{remetente} -> {destinatario}]: {mensagem}")
+
     except WebSocketDisconnect:
-        manager.disconnect(client_id)
-        await manager.broadcast(f"Client #{client_id} has left the chat")
-        await manager.send_user_list()
-        
-    
+        manager.disconnect(websocket)
+        await manager.broadcast(f"Usuário {client_id} saiu do chat.")
 
+
+@app.get("/mensagens/{email1}/{email2}")
+def listar_mensagens(email1: str, email2: str):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT remetente, destinatario, mensagem, lida, timestamp
+            FROM mensagens
+            WHERE (remetente = ? AND destinatario = ?)
+               OR (remetente = ? AND destinatario = ?)
+            ORDER BY timestamp ASC
+        """, (email1, email2, email2, email1))
+        mensagens = cursor.fetchall()
+
+    return [
+        {
+            "remetente": r,
+            "destinatario": d,
+            "mensagem": m,
+            "lida": l,
+            "timestamp": t
+        } for r, d, m, l, t in mensagens
+    ]
