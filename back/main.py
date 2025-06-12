@@ -162,24 +162,6 @@ class Usuario(BaseModel):
         return v
 
 
-class MessageCreate(BaseModel):
-    sender_id: int
-    receiver_id: int | None
-    content: str
-
-
-class MessageOut(BaseModel):
-    id: int
-    sender_id: int
-    receiver_id: int | None
-    content: str
-    timestamp: datetime
-
-    class Config:
-        from_attributes = True
-
-
-
 class LoginRequest(BaseModel):
     identificador: str  # pode ser email ou nome
     senha: str
@@ -299,8 +281,6 @@ def login(usuario: LoginRequest):
     raise HTTPException(status_code=401, detail="Email ou senha incorretos")
    
 
-
-
 @app.get("/alunos/{codigo_sala}")
 def listar_alunos_por_sala(codigo_sala: str):
     with sqlite3.connect(DB_FILE) as conn:
@@ -319,7 +299,6 @@ def listar_alunos_por_sala(codigo_sala: str):
         {"nome": nome, "email": email}
         for nome, email in alunos
     ]
-
 
 
 @app.post("/publicar-tematica")
@@ -580,57 +559,3 @@ def verificar_usuario_existe(email):
 
 
 #----------------------------------------CHAT----------------------------------------------
-
-@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_json()
-            remetente = data.get("remetente")
-            destinatario = data.get("destinatario")
-            mensagem = data.get("mensagem")
-
-            if not all([remetente, destinatario, mensagem]):
-                await websocket.send_text("Dados incompletos.")
-                continue
-
-            # Salva no banco
-            with sqlite3.connect(DB_FILE) as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO mensagens (remetente, destinatario, mensagem)
-                    VALUES (?, ?, ?)
-                """, (remetente, destinatario, mensagem))
-                conn.commit()
-
-            # Broadcast para todos os usuários conectados
-            await manager.broadcast(f"[{remetente} -> {destinatario}]: {mensagem}")
-
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        await manager.broadcast(f"Usuário {client_id} saiu do chat.")
-
-
-@app.get("/mensagens/{email1}/{email2}")
-def listar_mensagens(email1: str, email2: str):
-    with sqlite3.connect(DB_FILE) as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT remetente, destinatario, mensagem, lida, timestamp
-            FROM mensagens
-            WHERE (remetente = ? AND destinatario = ?)
-               OR (remetente = ? AND destinatario = ?)
-            ORDER BY timestamp ASC
-        """, (email1, email2, email2, email1))
-        mensagens = cursor.fetchall()
-
-    return [
-        {
-            "remetente": r,
-            "destinatario": d,
-            "mensagem": m,
-            "lida": l,
-            "timestamp": t
-        } for r, d, m, l, t in mensagens
-    ]

@@ -10,6 +10,17 @@ app = FastAPI()
 
 DB_FILE = "usuarios.db"
 
+with sqlite3.connect("usuarios.db") as conn:
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE mensagens ADD COLUMN entregue INTEGER DEFAULT 0;")
+        conn.commit()
+        print("Coluna 'entregue' adicionada com sucesso.")
+    except sqlite3.OperationalError as e:
+        print(f"Erro ao adicionar coluna: {e}")
+
+
+
 html = """
 <!DOCTYPE html>
 <html>
@@ -76,6 +87,32 @@ html = """
             let currentUserEmail = '';
             let onlineUsers = {};
 
+            async function carregarContatos(email) {
+                try {
+                    const response = await fetch(`/contatos/${encodeURIComponent(email)}`);
+                    if (!response.ok) {
+                        console.error("Erro ao buscar contatos");
+                        return;
+                    }
+                    const data = await response.json();
+                    const recipientSelect = document.getElementById('recipient-email');
+
+                    // Limpa opções atuais, exceto a primeira
+                    recipientSelect.innerHTML = '<option value="">Select recipient</option>';
+
+                    data.contatos.forEach(contato => {
+                        if(contato !== email) { // evitar adicionar o próprio email
+                            const option = document.createElement('option');
+                            option.value = contato;
+                            option.textContent = contato;
+                            recipientSelect.appendChild(option);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Erro ao carregar contatos:", error);
+                }
+            }
+
             function connectWebSocket(event) {
                 event.preventDefault();
                 currentUserEmail = document.getElementById('email').value;
@@ -86,6 +123,8 @@ html = """
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('chat-section').style.display = 'block';
                     document.getElementById('user-email').textContent = currentUserEmail;
+
+                    carregarContatos(currentUserEmail); // chama a nova função para carregar contatos
                 };
 
                 ws.onmessage = (event) => {
@@ -101,11 +140,9 @@ html = """
 
             function updateOnlineUsers(users) {
                 const usersList = document.getElementById('online-users');
-                const recipientSelect = document.getElementById('recipient-email');
 
-                // Clear existing options except the first one
+                // Clear existing online users list
                 usersList.innerHTML = '';
-                recipientSelect.innerHTML = '<option value="">Select recipient</option>';
 
                 // Add current users
                 users.forEach(email => {
@@ -115,12 +152,6 @@ html = """
                         userItem.className = 'list-group-item';
                         userItem.textContent = email;
                         usersList.appendChild(userItem);
-
-                        // Add to recipient dropdown
-                        const option = document.createElement('option');
-                        option.value = email;
-                        option.textContent = email;
-                        recipientSelect.appendChild(option);
                     }
                 });
             }
@@ -149,7 +180,6 @@ html = """
                 const recipient = document.getElementById('recipient-email').value;
                 const input = document.getElementById('privateMessage');
 
-                // Verifica se um destinatário foi selecionado antes de enviar
                 if (!recipient) {
                     alert('Selecione um destinatário para enviar a mensagem privada.');
                     return;
@@ -164,13 +194,11 @@ html = """
                 input.value = '';
             }
 
-            // Função para carregar histórico de mensagens entre currentUserEmail e contatoEmail
             async function carregarHistorico(contatoEmail) {
                 const messagesList = document.getElementById('messages');
-                messagesList.innerHTML = ''; // limpa mensagens antigas
+                messagesList.innerHTML = '';
 
                 if (!contatoEmail) {
-                    // Se não tem contato selecionado, limpar histórico e sair
                     return;
                 }
 
@@ -198,7 +226,6 @@ html = """
                 }
             }
 
-            // Escuta mudança no select de destinatário para carregar histórico
             document.getElementById('recipient-email').addEventListener('change', (event) => {
                 const contato = event.target.value;
                 carregarHistorico(contato);
@@ -264,19 +291,21 @@ async def get():
 
 @app.websocket("/ws/{email}")
 async def websocket_endpoint(websocket: WebSocket, email: str):
-    # Decodifique o email corretamente
     email = urllib.parse.unquote(email)
-    
     await manager.connect(websocket, email)
+
+    # 🔄 Enviar mensagens pendentes
+    entregar_mensagens_pendentes(email)
+
     try:
         while True:
             data = await websocket.receive_text()
             try:
                 message = json.loads(data)
-                
+
                 if message['type'] == 'public_message':
                     salvar_mensagem(remetente=email, destinatario=None, mensagem=message['content'])
-                    
+
                     await manager.broadcast(
                         json.dumps({
                             "type": "message",
@@ -285,22 +314,27 @@ async def websocket_endpoint(websocket: WebSocket, email: str):
                         }),
                         exclude=email
                     )
+
                 elif message['type'] == 'private_message':
                     recipient = message['recipient']
                     content = message['content']
-                    
+
                     salvar_mensagem(remetente=email, destinatario=recipient, mensagem=content)
-                    
-                    # Enviar para destinatário
-                    await manager.send_personal_message(
-                        json.dumps({
-                            "type": "message",
-                            "content": f"Private from {email}: {content}",
-                            "is_private": True
-                        }),
-                        recipient
-                    )
-                    # Confirmação para remetente
+
+                    # 🔍 Se destinatário estiver online, envia
+                    if recipient in manager.active_connections:
+                        await manager.send_personal_message(
+                            json.dumps({
+                                "type": "message",
+                                "content": f"Private from {email}: {content}",
+                                "is_private": True
+                            }),
+                            recipient
+                        )
+                        # Marca como entregue
+                        marcar_como_entregue(email, recipient, content)
+
+                    # ✅ Confirmação para remetente
                     await manager.send_personal_message(
                         json.dumps({
                             "type": "message",
@@ -309,6 +343,7 @@ async def websocket_endpoint(websocket: WebSocket, email: str):
                         }),
                         email
                     )
+
             except json.JSONDecodeError:
                 await manager.send_personal_message(
                     json.dumps({
@@ -317,6 +352,7 @@ async def websocket_endpoint(websocket: WebSocket, email: str):
                     }),
                     email
                 )
+
     except WebSocketDisconnect:
         await manager.disconnect(email)
         await manager.broadcast(
@@ -328,13 +364,13 @@ async def websocket_endpoint(websocket: WebSocket, email: str):
         )
 
 
+
 def salvar_mensagem(remetente: str, destinatario: str | None, mensagem: str):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        # Certifique-se que tabela mensagens tem colunas: remetente, destinatario, mensagem, timestamp (timestamp automático)
         cursor.execute("""
-            INSERT INTO mensagens (remetente, destinatario, mensagem, timestamp)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            INSERT INTO mensagens (remetente, destinatario, mensagem, entregue)
+            VALUES (?, ?, ?, 0)
         """, (remetente, destinatario, mensagem))
         conn.commit()
 
@@ -365,8 +401,84 @@ def obter_historico_filtrado(email: str, contato: str):
         })
     return historico
 
-# --- Inicialização da tabela, caso não exista ---
 
+@app.get("/contatos/{email}")
+def obter_contatos(email: str):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT
+                CASE
+                    WHEN remetente = ? THEN destinatario
+                    ELSE remetente
+                END AS contato
+            FROM mensagens
+            WHERE remetente = ? OR destinatario = ?
+            AND contato IS NOT NULL
+        """, (email, email, email))
+        
+        contatos = [row[0] for row in cursor.fetchall() if row[0] is not None]
+
+    return {"contatos": contatos}
+
+
+
+def entregar_mensagens_pendentes(destinatario: str):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, remetente, mensagem
+            FROM mensagens
+            WHERE destinatario = ? AND entregue = 0
+            ORDER BY timestamp ASC
+        """, (destinatario,))
+        pendentes = cursor.fetchall()
+
+        for msg_id, remetente, mensagem in pendentes:
+            try:
+                # Enviar para destinatário se estiver online
+                if destinatario in manager.active_connections:
+                    import asyncio
+                    asyncio.create_task(
+                        manager.send_personal_message(
+                            json.dumps({
+                                "type": "message",
+                                "content": f"Private from {remetente}: {mensagem}",
+                                "is_private": True
+                            }),
+                            destinatario
+                        )
+                    )
+
+                    cursor.execute("""
+                        UPDATE mensagens SET entregue = 1 WHERE id = ?
+                    """, (msg_id,))
+            except Exception as e:
+                print(f"Erro ao entregar mensagem pendente: {e}")
+
+        conn.commit()
+
+
+def marcar_como_entregue(remetente: str, destinatario: str, mensagem: str):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id FROM mensagens
+            WHERE remetente = ? AND destinatario = ? AND mensagem = ? AND entregue = 0
+            ORDER BY timestamp ASC
+            LIMIT 1
+        """, (remetente, destinatario, mensagem))
+        result = cursor.fetchone()
+
+        if result:
+            msg_id = result[0]
+            cursor.execute("""
+                UPDATE mensagens SET entregue = 1 WHERE id = ?
+            """, (msg_id,))
+            conn.commit()
+
+
+# --- Inicialização da tabela, caso não exista ---
 def criar_tabela_mensagens():
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
@@ -376,7 +488,8 @@ def criar_tabela_mensagens():
                 remetente TEXT NOT NULL,
                 destinatario TEXT,
                 mensagem TEXT NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                entregue BOOLEAN DEFAULT 0
             )
         """)
         conn.commit()
