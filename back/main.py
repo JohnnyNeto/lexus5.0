@@ -10,14 +10,9 @@ from fastapi import FastAPI, HTTPException, UploadFile, Form, File, WebSocket, W
 from pydantic import BaseModel, EmailStr, field_validator
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Literal
-from models import SessionLocal, Message
 from datetime import datetime
 from fastapi import Query
-
-
 from fastapi.staticfiles import StaticFiles
-
-
 
 
 
@@ -139,14 +134,6 @@ def startup_event():
     inicializar_banco()
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 # Modelos
 class Usuario(BaseModel):
     nome: str
@@ -174,29 +161,6 @@ class Publicacao(BaseModel):
     titulo: str
     conteudo: str
     imagem: UploadFile = File(None)
-
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
-
-    
-manager = ConnectionManager()
 
 
 
