@@ -136,6 +136,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background 0.3s;
+            text-align: left;
         }
         
         .dropdown-producao button:hover {
@@ -291,25 +292,25 @@
                 <p><strong>E-mail:</strong> <span id="perfilEmail">carregando...</span></p>
                 <p><strong>Turma:</strong> <span id="perfilSala">carregando...</span></p>
 
-                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+                <button onclick="window.location.href='index.html'" class="sair-btn">Sair</button>
             </div>
 
             <div class="dropdown-producao" id="produzirDropdown">
-                <button onclick="window.location.href='fotografia.html'">📷 Fotografia</button>
-                <button onclick="window.location.href='podcast.html'">🎙️ Podcast</button>
-                <button onclick="window.location.href='tema.html'">📝 Tema Proposto</button>
+                <button onclick="window.location.href='fotografia.html'"><img src="images\fotografia-icon-branco.png" alt="Ícone Upload" style="width:16px; vertical-align:middle; margin-bottom: 3px; margin-left: 5px;"> Fotografia</button>
+                <button onclick="window.location.href='podcast.html'"><img src="images\podcast-icon-branco.png" alt="Ícone Upload" style="width:24px; vertical-align:middle; margin-bottom: 3px; margin-right: -2px;"> Podcast</button>
+                <button onclick="window.location.href='tema.html'"><img src="images\tematica-icon.png" alt="Ícone Upload" style="width:16px; vertical-align:middle; margin-bottom: 3px;margin-left: 7px; margin-right: 0px;"> Tema Proposto</button>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <h1>📝 Produções da Turma</h1>
+        <h1>Produções da Turma</h1>
 
         <div class="mural" id="muralTurma">
             <!-- Cards da turma serão inseridos aqui dinamicamente -->
         </div>
 
-        <h1 style="margin-top: 60px;">📚 Minhas Produções</h1>
+        <h1 style="margin-top: 60px;">Minhas Produções</h1>
 
         <div class="mural" id="muralMinhas">
             <!-- Cards das minhas produções serão inseridos aqui dinamicamente -->
