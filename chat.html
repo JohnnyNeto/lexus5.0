@@ -376,7 +376,7 @@
                 <p><strong>Nome:</strong> João da Silva</p>
                 <p><strong>E-mail:</strong> joao.professor@escola.com</p>
                 <p><strong>Código:</strong> ABC123</p>
-                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+                <button onclick="window.location.href='index.html'" class="sair-btn">Sair</button>
             </div>
         </div>
     </div>
@@ -410,200 +410,111 @@
         </main>
     </div>
 
-<script>
-    // Recupera informações do usuário salvas no localStorage
-    const nome = localStorage.getItem("nome");
-    const email = localStorage.getItem("email");
-    const codigoSala = localStorage.getItem("codigo_sala");
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tipoUsuario = "professor";
 
-    // Preenche os dados do perfil se existirem
-    if (nome) document.getElementById("perfilNome")?.textContent = nome;
-    if (email) document.getElementById("perfilEmail")?.textContent = email;
-    if (codigoSala) document.getElementById("perfilCodigo")?.textContent = codigoSala;
+            document.getElementById("logoLexus").addEventListener("click", () => {
+                window.location.href = tipoUsuario === "professor" ? "./home.html" : "./home-aluno.html";
+            });
 
-    // WebSocket global
-    let ws = null;
-    let currentUserEmail = email || "";
+            const contacts = [{
+                id: 1,
+                name: 'Maria Eduarda',
+                avatar: 'images/noprofile.jpg',
+                lastMessage: 'Obrigada!',
+                messages: [{
+                    text: 'Obrigado!',
+                    sent: false
+                }, {
+                    text: 'De nada!',
+                    sent: true
+                }]
+            }];
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const tipoUsuario = "professor";
+            const contactList = document.getElementById('contactList');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatHeader = document.getElementById('chatHeader');
+            const chatContactName = chatHeader.querySelector('.chat-contact-name');
+            const chatContactAvatar = chatHeader.querySelector('img');
+            const messageInput = document.getElementById('messageInput');
+            const btnSend = document.querySelector('.btn-send');
+            const chatForm = document.getElementById('chatForm');
 
-        document.getElementById("logoLexus")?.addEventListener("click", () => {
-            window.location.href = tipoUsuario === "professor" ? "./home.html" : "./home-aluno.html";
-        });
+            function renderContacts() {
+                contactList.innerHTML = '';
+                const contact = contacts[0];
+                const div = document.createElement('div');
+                div.className = 'contact active';
+                div.innerHTML = `
+                <img src="${contact.avatar}" alt="${contact.name}" />
+                <div class="contact-info">
+                    <div class="contact-name">${contact.name}</div>
+                    <div class="contact-last-message">${contact.lastMessage}</div>
+                </div>`;
+                contactList.appendChild(div);
+            }
 
-        const chatMessages = document.getElementById("chatMessages");
-        const chatHeader = document.getElementById("chatHeader");
-        const chatContactName = chatHeader?.querySelector(".chat-contact-name");
-        const chatContactAvatar = chatHeader?.querySelector("img");
-        const messageInput = document.getElementById("messageInput");
-        const btnSend = document.querySelector(".btn-send");
-        const chatForm = document.getElementById("chatForm");
-        const perfilBtn = document.getElementById("perfilBtn");
-        const perfilDropdown = document.getElementById("perfilDropdown");
-
-        let contatoAtual = null;
-
-        // Carrega histórico de mensagens
-        async function carregarHistorico(emailDestino) {
-            contatoAtual = emailDestino;
-            try {
-                const res = await fetch(`http://localhost:8080/mensagens/historico/${email}/${emailDestino}`);
-                if (!res.ok) {
-                    chatMessages.innerHTML = `<div class="text-muted" style="padding: 20px;">Nenhuma conversa encontrada.</div>`;
-                    return;
-                }
-
-                const mensagens = await res.json();
-                chatMessages.innerHTML = "";
-
-                mensagens.forEach(msg => {
-                    const div = document.createElement("div");
-                    div.className = `message ${msg.remetente === email ? "sent" : "received"}`;
-                    div.textContent = msg.mensagem;
+            function renderChat(contact) {
+                chatContactName.textContent = contact.name;
+                chatContactAvatar.src = contact.avatar;
+                chatMessages.innerHTML = '';
+                contact.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.sent ? 'sent' : 'received'}`;
+                    div.textContent = msg.text;
                     chatMessages.appendChild(div);
                 });
-
-                chatContactName.textContent = emailDestino;
-                chatContactAvatar.src = "images/noProfile.jpg";
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                messageInput.disabled = false;
-                btnSend.disabled = true;
-            } catch (err) {
-                console.error("Erro ao carregar histórico:", err);
             }
-        }
 
-        // Carrega a lista de contatos
-        async function carregarContatos(emailUsuario) {
-            try {
-                const response = await fetch(`http://localhost:8080/contatos/${encodeURIComponent(emailUsuario)}`);
-                if (!response.ok) {
-                    console.error("Erro ao buscar contatos");
-                    return;
-                }
-
-                const data = await response.json();
-                const contactList = document.getElementById("contact-list");
-                if (!contactList) return;
-
-                contactList.innerHTML = "";
-
-                data.contatos.forEach(contato => {
-                    if (contato !== emailUsuario) {
-                        const contactDiv = document.createElement("div");
-                        contactDiv.classList.add("contact");
-                        contactDiv.textContent = contato;
-
-                        contactDiv.addEventListener("click", () => {
-                            document.querySelectorAll(".contact").forEach(c => c.classList.remove("active"));
-                            contactDiv.classList.add("active");
-                            carregarHistorico(contato);
-                        });
-
-                        contactList.appendChild(contactDiv);
-                    }
+            chatForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const text = messageInput.value.trim();
+                if (!text) return;
+                const contact = contacts[0];
+                contact.messages.push({
+                    text,
+                    sent: true
                 });
-            } catch (error) {
-                console.error("Erro ao carregar contatos:", error);
-            }
-        }
+                contact.lastMessage = text;
+                renderChat(contact);
+                renderContacts();
+                messageInput.value = '';
+                btnSend.disabled = true;
+                setTimeout(() => {
+                    contact.messages.push({
+                        text: 'Recebi sua mensagem!',
+                        sent: false
+                    });
+                    contact.lastMessage = 'Recebi sua mensagem!';
+                    renderChat(contact);
+                    renderContacts();
+                }, 1500);
+            });
 
-        // Envia mensagens no chat
-        chatForm?.addEventListener("submit", e => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (!text || !contatoAtual) return;
+            messageInput.addEventListener('input', () => {
+                btnSend.disabled = !messageInput.value.trim();
+            });
 
-            const div = document.createElement("div");
-            div.className = "message sent";
-            div.textContent = text;
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            renderContacts();
+            renderChat(contacts[0]);
+            messageInput.disabled = false;
 
-            messageInput.value = "";
-            btnSend.disabled = true;
+            const perfilBtn = document.getElementById("perfilBtn");
+            const perfilDropdown = document.getElementById("perfilDropdown");
 
-            // Simula resposta
-            setTimeout(() => {
-                const reply = document.createElement("div");
-                reply.className = "message received";
-                reply.textContent = "Recebi sua mensagem!";
-                chatMessages.appendChild(reply);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 1500);
+            perfilBtn.addEventListener("click", () => {
+                perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
+            });
+
+            window.addEventListener("click", function(e) {
+                if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+                    perfilDropdown.style.display = "none";
+                }
+            });
         });
-
-        // Habilita ou desabilita o botão "Enviar"
-        messageInput?.addEventListener("input", () => {
-            btnSend.disabled = !messageInput.value.trim();
-        });
-
-        // Toggle do menu de perfil
-        perfilBtn?.addEventListener("click", () => {
-            perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
-        });
-
-        window.addEventListener("click", e => {
-            if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
-                perfilDropdown.style.display = "none";
-            }
-        });
-
-        // Carrega contatos ao iniciar
-        if (email) {
-            carregarContatos(email);
-        }
-    });
-
-    // Conecta ao WebSocket
-    function connectWebSocket(event) {
-        event.preventDefault();
-        currentUserEmail = document.getElementById("email").value;
-
-        ws = new WebSocket(`ws://localhost:8080/ws/${encodeURIComponent(currentUserEmail)}`);
-
-        ws.onopen = () => {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("chat-section").style.display = "block";
-            document.getElementById("user-email").textContent = currentUserEmail;
-
-            carregarContatos(currentUserEmail);
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            if (data.type === "user_list") {
-                updateOnlineUsers(data.users);
-            } else if (data.type === "message") {
-                addMessage(data.content, data.is_private);
-            }
-        };
-    }
-
-    // Envia mensagem privada via WebSocket
-    function sendPrivateMessage(event) {
-        event.preventDefault();
-
-        const recipient = document.getElementById("recipient-email")?.value;
-        const input = document.getElementById("privateMessage");
-        if (!recipient || !ws) {
-            alert("Selecione um destinatário e verifique a conexão.");
-            return;
-        }
-
-        ws.send(JSON.stringify({
-            type: "private_message",
-            recipient: recipient,
-            content: input.value
-        }));
-
-        input.value = "";
-    }
-</script>
-
-
+    </script>
 
 </body>
 
