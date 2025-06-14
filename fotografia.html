@@ -89,6 +89,22 @@
             z-index: 1000;
         }
         
+        .dropdown-producao button {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            /* Adicione isso 👇 */
+            text-align: left;
+            padding-left: 15px;
+            /* opcional: espaço entre a borda e o texto */
+        }
+        
         .dropdown {
             right: 0;
             width: 260px;
@@ -181,7 +197,7 @@
             border-radius: 12px;
             border: 2px solid #1B4F72;
             width: 100%;
-            height: 480px;
+            height: 380px;
             font-size: 16px;
             resize: vertical;
         }
@@ -197,7 +213,7 @@
         .upload-box {
             flex: 0 1 280px;
             background-color: white;
-            border: 2px dashed #1B4F72;
+            border: 2px solid #1B4F72;
             border-radius: 15px;
             padding: 20px;
             text-align: center;
@@ -232,7 +248,7 @@
         .btn-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: -50px;
         }
         
         .btn-enviar {
@@ -306,8 +322,8 @@
         </div>
 
         <div class="upload-box">
+            <img src="images\fotografia-icon.png" alt="Ícone Upload" style="width:110px; vertical-align:middle;"><br>
             <label for="upload" class="upload-label">
-        <strong>📷</strong><br>
         Upload da imagem
       </label>
             <input type="file" id="upload" accept="image/*" onchange="mostrarPreview(event)">

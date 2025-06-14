@@ -89,6 +89,38 @@
             z-index: 1000;
         }
         
+        .dropdown-producao button {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            /* Adicione isso 👇 */
+            text-align: left;
+            padding-left: 15px;
+            /* opcional: espaço entre a borda e o texto */
+        }
+        
+        .dropdown-producao button {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            /* Adicione isso 👇 */
+            text-align: left;
+            padding-left: 15px;
+            /* opcional: espaço entre a borda e o texto */
+        }
+        
         .dropdown {
             right: 0;
             width: 260px;
@@ -181,7 +213,7 @@
             border-radius: 12px;
             border: 2px solid #1B4F72;
             width: 100%;
-            height: 480px;
+            height: 380px;
             font-size: 16px;
             resize: vertical;
         }
@@ -197,7 +229,7 @@
         .upload-box {
             flex: 0 1 280px;
             background-color: white;
-            border: 2px dashed #1B4F72;
+            border: 2px solid #1B4F72;
             border-radius: 15px;
             padding: 20px;
             text-align: center;
@@ -233,7 +265,7 @@
         .btn-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: -50px;
         }
         
         .btn-enviar {
@@ -278,13 +310,13 @@
                 <p><strong>Nome:</strong> Maria Eduarda</p>
                 <p><strong>E-mail:</strong> maria.eduarda@escola.com</p>
                 <p><strong>Turma:</strong> 9º A</p>
-                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
+                <button onclick="window.location.href='index.html'" class="sair-btn"> Sair</button>
             </div>
 
             <div class="dropdown-producao" id="produzirDropdown">
-                <button onclick="window.location.href='fotografia.html'">📷 Fotografia</button>
-                <button onclick="window.location.href='podcast.html'">🎙️ Podcast</button>
-                <button onclick="window.location.href='tema.html'">📝 Tema Proposto</button>
+                <button onclick="window.location.href='fotografia.html'"> Fotografia</button>
+                <button onclick="window.location.href='podcast.html'"> Podcast</button>
+                <button onclick="window.location.href='tema.html'"> Tema Proposto</button>
             </div>
         </div>
     </div>
@@ -300,15 +332,15 @@
             </div>
         </div>
 
-        '
+
         <div class="upload-box">
+            <img src="images\podcast-icon.png" alt="Ícone Upload" style="width:110px; vertical-align:middle;">
             <label for="linkPodcast" class="upload-label">
-        <strong>🔗</strong><br>
-        Cole o link do podcast (Spotify, SoundCloud, etc)
+        Cole o link do podcast
     </label>
             <input type="text" id="linkPodcast" placeholder="https://..." style="padding: 12px; font-size: 14px; width: 100%; border-radius: 8px; border: 1px solid #1B4F72;" />
         </div>
-        '
+
 
         <script>
             // Exemplo: Troque por lógica real com login/session/localStorage

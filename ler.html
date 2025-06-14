@@ -78,6 +78,22 @@
             transform: scale(1.05);
         }
         
+        .dropdown-producao button {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            /* Adicione isso 👇 */
+            text-align: left;
+            padding-left: 15px;
+            /* opcional: espaço entre a borda e o texto */
+        }
+        
         .dropdown {
             position: absolute;
             top: 60px;
@@ -100,6 +116,37 @@
         .dropdown p {
             font-size: 14px;
             margin-bottom: 6px;
+        }
+        
+        .dropdown-producao {
+            position: absolute;
+            top: 60px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            display: none;
+            z-index: 1000;
+            right: 100px;
+            width: 200px;
+        }
+        
+        .dropdown-producao button {
+            background-color: #226680;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-align: left;
+            padding-left: 15px;
+        }
+        
+        .dropdown-producao button:hover {
+            background-color: #164253;
         }
         
         .sair-btn {
@@ -221,17 +268,26 @@
         <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" id="logoLexus" />
 
         <div class="nav-links">
-            <a href="chat.html">Chat</a>
+            <a id="produzirBtn">Produzir</a>
+            <a href="chat-aluno.html">Chat</a>
+
             <img src="images/noProfile.jpg" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+
             <div class="dropdown" id="perfilDropdown">
-                <h3>👤 Meu perfil</h3>
+                <h3>👤 Meu Perfil</h3>
                 <p><strong>Nome:</strong> <span id="perfilNome">carregando...</span></p>
                 <p><strong>E-mail:</strong> <span id="perfilEmail">carregando...</span></p>
                 <p><strong>Código:</strong> <span id="perfilSala">carregando...</span></p>
-
                 <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
             </div>
+
+            <div class="dropdown-producao" id="produzirDropdown">
+                <button onclick="window.location.href='fotografia.html'">📷 Fotografia</button>
+                <button onclick="window.location.href='podcast.html'">🎙️ Podcast</button>
+                <button onclick="window.location.href='tema.html'">📝 Tema Proposto</button>
+            </div>
         </div>
+
     </div>
 
     <section class="main">
@@ -371,6 +427,22 @@
         document.getElementById("logoLexus").addEventListener("click", () => {
             window.location.href = tipoUsuario === "professor" ? "home.html" : "home-aluno.html";
         });
+
+        const produzirBtn = document.getElementById("produzirBtn");
+        const produzirDropdown = document.getElementById("produzirDropdown");
+
+        produzirBtn.addEventListener("click", () => {
+            const isVisible = produzirDropdown.style.display === "block";
+            produzirDropdown.style.display = isVisible ? "none" : "block";
+            perfilDropdown.style.display = "none";
+        });
+
+        window.addEventListener("click", function(e) {
+            if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
+                produzirDropdown.style.display = "none";
+            }
+        });
+
 
         // 👇 ESTA LINHA FAZ TUDO FUNCIONAR
         carregarPublicacao();
