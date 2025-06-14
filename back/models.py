@@ -305,6 +305,8 @@ async def get():
     return HTMLResponse(html)
 
 
+
+
 @app.websocket("/ws/{email}")
 async def websocket_endpoint(websocket: WebSocket, email: str):
     email = urllib.parse.unquote(email)
@@ -419,23 +421,31 @@ def obter_historico_filtrado(email: str, contato: str):
 
 @app.get("/contatos/{email}")
 def obter_contatos(email: str):
+    email = urllib.parse.unquote(email)  # Decodifica o email
+    print(f"\n--- Recebida requisição GET para /contatos/{email} ---")
+    
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT DISTINCT
-                CASE
-                    WHEN remetente = ? THEN destinatario
-                    ELSE remetente
-                END AS contato
-            FROM mensagens
-            WHERE remetente = ? OR destinatario = ?
-            AND contato IS NOT NULL
-        """, (email, email, email))
-        
-        contatos = [row[0] for row in cursor.fetchall() if row[0] is not None]
-
-    return {"contatos": contatos}
-
+        try:
+            cursor.execute("""
+                SELECT DISTINCT
+                    CASE
+                        WHEN remetente = ? THEN destinatario
+                        ELSE remetente
+                    END AS contato
+                FROM mensagens
+                WHERE (remetente = ? OR destinatario = ?)
+                AND contato IS NOT NULL
+            """, (email, email, email))
+            
+            contatos = [row[0] for row in cursor.fetchall() if row[0] is not None and row[0] != email]
+            print(f"Contatos encontrados para {email}: {contatos}")
+            
+            return {"contatos": contatos}
+            
+        except Exception as e:
+            print(f"Erro ao buscar contatos: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 def entregar_mensagens_pendentes(destinatario: str):

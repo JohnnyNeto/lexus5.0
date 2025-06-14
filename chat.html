@@ -1,610 +1,554 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+    <!DOCTYPE html>
+    <html lang="pt-BR">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Chat - Lexus</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body,
-        html {
-            height: 100%;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        
-        .navbar {
-            background-color: #226680;
-            padding: 18px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .logo-img {
-            max-height: 28px;
-            object-fit: contain;
-            transform: scale(1.4);
-            transform-origin: left center;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .logo-img:hover {
-            transform: scale(1.5);
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-            position: relative;
-        }
-        
-        .dropdown-producao button {
-            background-color: #226680;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-            /* Adicione isso 👇 */
-            text-align: left;
-            padding-left: 15px;
-            /* opcional: espaço entre a borda e o texto */
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background-color: #164253;
-        }
-        
-        .perfil-foto {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-        
-        .perfil-foto:hover {
-            transform: scale(1.05);
-        }
-        
-        .dropdown {
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-            display: none;
-            width: 260px;
-            z-index: 1000;
-        }
-        
-        .dropdown h3 {
-            margin-bottom: 10px;
-            color: #226680;
-            font-size: 18px;
-        }
-        
-        .dropdown p {
-            font-size: 14px;
-            margin-bottom: 6px;
-        }
-        
-        .sair-btn {
-            background-color: #226680;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.3s;
-        }
-        
-        .sair-btn:hover {
-            background-color: #164253;
-        }
-        /* Restante do estilo do chat igual ao anterior... (mantido sem alterações) */
-        
-        .chat-container {
-            display: flex;
-            height: calc(100vh - 70px);
-            background-color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin: 20px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .chat-sidebar {
-            width: 320px;
-            border-right: 1px solid #ddd;
-            display: flex;
-            flex-direction: column;
-            background-color: #fafafa;
-        }
-        
-        .sidebar-header {
-            padding: 20px;
-            font-weight: 700;
-            font-size: 20px;
-            color: #1B4F72;
-            border-bottom: 1px solid #ddd;
-            user-select: none;
-        }
-        
-        .contact-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 0;
-        }
-        
-        .contact {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .contact.active {
-            background-color: white;
-            color: black;
-        }
-        
-        .contact:hover {
-            background-color: #e3e3f1;
-            color: black;
-        }
-        
-        .contact img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 15px;
-            transition: border-color 0.2s;
-            border: 2px solid #226680;
-        }
-        
-        .contact-info {
-            flex: 1;
-        }
-        
-        .contact-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-        
-        .contact-last-message {
-            font-size: 14px;
-            color: #666;
-            margin-top: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .chat-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #fff;
-        }
-        
-        .chat-header {
-            padding: 20px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background-color: #1B4F72;
-            color: white;
-            user-select: none;
-        }
-        
-        .chat-header img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .chat-header .chat-contact-name {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #f9f9fb;
-        }
-        
-        .message {
-            max-width: 70%;
-            margin-bottom: 15px;
-            padding: 12px 18px;
-            border-radius: 20px;
-            font-size: 15px;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-        
-        .message.sent {
-            background-color: #1B4F72;
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .message.received {
-            background-color: #e3e3f1;
-            color: #333;
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
-        }
-        
-        .chat-input {
-            padding: 15px 20px;
-            border-top: 1px solid #ddd;
-            display: flex;
-            gap: 15px;
-            background-color: #fafafa;
-        }
-        
-        .chat-input textarea {
-            flex: 1;
-            resize: none;
-            padding: 12px 15px;
-            font-size: 16px;
-            border-radius: 25px;
-            border: 1.5px solid #1B4F72;
-            outline: none;
-            transition: border-color 0.3s;
-            min-height: 45px;
-            max-height: 120px;
-        }
-        
-        .chat-input textarea:focus {
-            border-color: #226680;
-        }
-        
-        .btn-send {
-            background-color: #226680;
-            border: none;
-            color: white;
-            font-weight: 700;
-            padding: 0 22px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-        }
-        
-        .btn-send:disabled {
-            background-color: #226680;
-            cursor: not-allowed;
-        }
-        
-        .btn-send:hover:not(:disabled) {
-            background-color: #114153;
-        }
-        
-        @media (max-width: 768px) {
-            .chat-container {
-                flex-direction: column;
-                height: auto;
-                margin: 10px;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Chat - Lexus</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
-            .chat-sidebar {
-                width: 100%;
-                height: 160px;
-                border-right: none;
-                border-bottom: 1px solid #ddd;
-                overflow-x: auto;
+            
+            body,
+            html {
+                height: 100%;
+                background-color: #f4f4f4;
+                color: #333;
+            }
+            
+            .navbar {
+                background-color: #226680;
+                padding: 18px 50px;
                 display: flex;
-            }
-            .contact {
-                flex-direction: column;
+                justify-content: space-between;
                 align-items: center;
-                min-width: 120px;
+                box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+            
+            .logo-img {
+                max-height: 28px;
+                object-fit: contain;
+                transform: scale(1.4);
+                transform-origin: left center;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+            }
+            
+            .logo-img:hover {
+                transform: scale(1.5);
+            }
+            
+            .nav-links {
+                display: flex;
+                gap: 25px;
+                align-items: center;
+                position: relative;
+            }
+            
+            .dropdown-producao button {
+                background-color: #226680;
+                color: white;
+                border: none;
                 padding: 10px;
+                width: 100%;
+                margin-bottom: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background 0.3s;
+                /* Adicione isso 👇 */
+                text-align: left;
+                padding-left: 15px;
+                /* opcional: espaço entre a borda e o texto */
             }
-            .contact-name {
-                font-size: 14px;
+            
+            .nav-links a {
+                color: white;
+                text-decoration: none;
+                font-size: 16px;
+                padding: 8px 12px;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background 0.3s;
             }
-            .contact-last-message {
+            
+            .nav-links a:hover {
+                background-color: #164253;
+            }
+            
+            .perfil-foto {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                cursor: pointer;
+                transition: transform 0.3s;
+            }
+            
+            .perfil-foto:hover {
+                transform: scale(1.05);
+            }
+            
+            .dropdown {
+                position: absolute;
+                top: 60px;
+                right: 0;
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                padding: 20px;
                 display: none;
+                width: 260px;
+                z-index: 1000;
             }
-            .chat-main {
-                height: 70vh;
+            
+            .dropdown h3 {
+                margin-bottom: 10px;
+                color: #226680;
+                font-size: 18px;
             }
-            .chat-messages {
+            
+            .dropdown p {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+            
+            .sair-btn {
+                background-color: #226680;
+                color: white;
+                border: none;
                 padding: 10px;
+                width: 100%;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 15px;
+                transition: background 0.3s;
             }
+            
+            .sair-btn:hover {
+                background-color: #164253;
+            }
+            /* Restante do estilo do chat igual ao anterior... (mantido sem alterações) */
+            
+            .chat-container {
+                display: flex;
+                height: calc(100vh - 70px);
+                background-color: white;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                margin: 20px;
+                border-radius: 12px;
+                overflow: hidden;
+            }
+            
+            .chat-sidebar {
+                width: 320px;
+                border-right: 1px solid #ddd;
+                display: flex;
+                flex-direction: column;
+                background-color: #fafafa;
+            }
+            
+            .sidebar-header {
+                padding: 20px;
+                font-weight: 700;
+                font-size: 20px;
+                color: #1B4F72;
+                border-bottom: 1px solid #ddd;
+                user-select: none;
+            }
+            
+            .contact-list {
+                flex: 1;
+                overflow-y: auto;
+                padding: 10px 0;
+            }
+            
+            .contact {
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            
+            .contact.active {
+                background-color: white;
+                color: black;
+            }
+            
+            .contact:hover {
+                background-color: #e3e3f1;
+                color: black;
+            }
+            
+            .contact img {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-right: 15px;
+                transition: border-color 0.2s;
+                border: 2px solid #226680;
+            }
+            
+            .contact-info {
+                flex: 1;
+            }
+            
+            .contact-name {
+                font-weight: 600;
+                font-size: 16px;
+            }
+            
+            .contact-last-message {
+                font-size: 14px;
+                color: #666;
+                margin-top: 3px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .chat-main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background-color: #fff;
+            }
+            
+            .chat-header {
+                padding: 20px;
+                border-bottom: 1px solid #ddd;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                background-color: #1B4F72;
+                color: white;
+                user-select: none;
+            }
+            
+            .chat-header img {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            
+            .chat-header .chat-contact-name {
+                font-size: 20px;
+                font-weight: 700;
+            }
+            
+            .chat-messages {
+                flex: 1;
+                padding: 20px;
+                overflow-y: auto;
+                background: #f9f9fb;
+            }
+            
+            .message {
+                max-width: 70%;
+                margin-bottom: 15px;
+                padding: 12px 18px;
+                border-radius: 20px;
+                font-size: 15px;
+                line-height: 1.4;
+                word-wrap: break-word;
+            }
+            
+            .message.sent {
+                background-color: #1B4F72;
+                color: white;
+                margin-left: auto;
+                border-bottom-right-radius: 4px;
+            }
+            
+            .message.received {
+                background-color: #e3e3f1;
+                color: #333;
+                margin-right: auto;
+                border-bottom-left-radius: 4px;
+            }
+            
+            .chat-input {
+                padding: 15px 20px;
+                border-top: 1px solid #ddd;
+                display: flex;
+                gap: 15px;
+                background-color: #fafafa;
+            }
+            
             .chat-input textarea {
-                min-height: 40px;
+                flex: 1;
+                resize: none;
+                padding: 12px 15px;
+                font-size: 16px;
+                border-radius: 25px;
+                border: 1.5px solid #1B4F72;
+                outline: none;
+                transition: border-color 0.3s;
+                min-height: 45px;
+                max-height: 120px;
             }
-        }
-    </style>
-</head>
+            
+            .chat-input textarea:focus {
+                border-color: #226680;
+            }
+            
+            .btn-send {
+                background-color: #226680;
+                border: none;
+                color: white;
+                font-weight: 700;
+                padding: 0 22px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background-color 0.3s;
+            }
+            
+            .btn-send:disabled {
+                background-color: #226680;
+                cursor: not-allowed;
+            }
+            
+            .btn-send:hover:not(:disabled) {
+                background-color: #114153;
+            }
+            
+            @media (max-width: 768px) {
+                .chat-container {
+                    flex-direction: column;
+                    height: auto;
+                    margin: 10px;
+                }
+                .chat-sidebar {
+                    width: 100%;
+                    height: 160px;
+                    border-right: none;
+                    border-bottom: 1px solid #ddd;
+                    overflow-x: auto;
+                    display: flex;
+                }
+                .contact {
+                    flex-direction: column;
+                    align-items: center;
+                    min-width: 120px;
+                    padding: 10px;
+                }
+                .contact-name {
+                    font-size: 14px;
+                }
+                .contact-last-message {
+                    display: none;
+                }
+                .chat-main {
+                    height: 70vh;
+                }
+                .chat-messages {
+                    padding: 10px;
+                }
+                .chat-input textarea {
+                    min-height: 40px;
+                }
+            }
+        </style>
+    </head>
 
-<body>
-
-    <div class="navbar">
-        <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" id="logoLexus" />
-        <div class="nav-links">
-            <a href="chat.html">Chat</a>
-            <img src="images/noprofile.jpg" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
-            <div class="dropdown" id="perfilDropdown">
-                <h3>Meu Perfil</h3>
-                <p><strong>Nome:</strong> João da Silva</p>
-                <p><strong>E-mail:</strong> joao.professor@escola.com</p>
-                <p><strong>Código:</strong> ABC123</p>
-                <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
-            </div>
+<!-- NAVBAR -->
+<div class="navbar">
+    <img src="images/lexus.png" alt="Logo Lexus" class="logo-img" onclick="window.location.href='home.html'" />
+    <div class="nav-links">
+        <a href="chat.html">Chat</a>
+        <h4><img src="images/noProfile.jpg" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" /></h4>
+        <div class="dropdown" id="perfilDropdown">
+            <h3>Meu perfil</h3>
+            <p><strong>Nome:</strong> <span id="perfilNome">Carregando...</span></p>
+            <p><strong>E-mail:</strong> <span id="perfilEmail">Carregando...</span></p>
+            <p><strong>Código:</strong> <span id="perfilCodigo">Carregando...</span></p>
+            <button onclick="window.location.href='index.html'" class="sair-btn">🚪 Sair</button>
         </div>
     </div>
+</div>
 
-    <div class="chat-container">
-        <aside class="chat-sidebar">
-            <div class="sidebar-header">Contatos</div>
-            <div class="contact-list" id="contactList">
-                <div class="contact" onclick="selectContact('', 'images/perfil1.png')">
-                    <img src="images/noProfile.jpg" alt="Sem foto de perfil" />
-                    <div class="contact-info">
-                        <div class="contact-name">Maria Eduarda</div>
-                        <div class="contact-last-message">De nada!</div>
-                    </div>
-                </div>
-            </div>
+<!-- CHAT -->
+<div class="chat-container">
+    <aside class="chat-sidebar">
+        <div class="sidebar-header">Contatos</div>
+        <div class="contact-list" id="contact-list"></div>
+    </aside>
 
-        </aside>
+    <main class="chat-main">
+        <header class="chat-header" id="chatHeader">
+            <img id="chatContactAvatar" src="images/perfil1.png" alt="Foto de perfil" class="perfil-foto" />
+            <div class="chat-contact-name" id="chatContactName">Selecione um contato</div>
+        </header>
 
-        <main class="chat-main">
-            <header class="chat-header" id="chatHeader">
-                <img src="images/perfil1.png" alt="Foto de perfil" id="perfilBtn" class="perfil-foto" />
+        <section class="chat-messages" id="chatMessages"></section>
 
-                <div class="chat-contact-name">Maria Eduarda</div>
-            </header>
-            <section class="chat-messages" id="chatMessages"></section>
-            <form class="chat-input" id="chatForm">
-                <textarea id="messageInput" placeholder="Digite uma mensagem..." rows="1" disabled></textarea>
-                <button type="submit" class="btn-send" disabled>Enviar</button>
-            </form>
-        </main>
-    </div>
+        <form class="chat-input" id="chatForm">
+            <textarea id="messageInput" placeholder="Digite uma mensagem..." rows="1" disabled></textarea>
+            <button type="submit" class="btn-send" id="btnSend" disabled>Enviar</button>
+        </form>
+    </main>
+</div>
 
 <script>
-    // Recupera informações do usuário salvas no localStorage
-    const nome = localStorage.getItem("nome");
-    const email = localStorage.getItem("email");
-    const codigoSala = localStorage.getItem("codigo_sala");
+    const perfilBtn = document.getElementById("perfilBtn");
+    const perfilDropdown = document.getElementById("perfilDropdown");
+    const chatContactName = document.getElementById("chatContactName");
+    const chatContactAvatar = document.getElementById("chatContactAvatar");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const messageInput = document.getElementById("messageInput");
+    const btnSend = document.getElementById("btnSend");
+    const contactList = document.getElementById("contact-list");
 
-    // Preenche os dados do perfil se existirem
-    if (nome) document.getElementById("perfilNome")?.textContent = nome;
-    if (email) document.getElementById("perfilEmail")?.textContent = email;
-    if (codigoSala) document.getElementById("perfilCodigo")?.textContent = codigoSala;
-
-    // WebSocket global
+    let currentUserEmail = localStorage.getItem("email") || "";
+    let contatoAtual = null;
     let ws = null;
-    let currentUserEmail = email || "";
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const tipoUsuario = "professor";
+    perfilBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
+    });
 
-        document.getElementById("logoLexus")?.addEventListener("click", () => {
-            window.location.href = tipoUsuario === "professor" ? "./home.html" : "./home-aluno.html";
-        });
-
-        const chatMessages = document.getElementById("chatMessages");
-        const chatHeader = document.getElementById("chatHeader");
-        const chatContactName = chatHeader?.querySelector(".chat-contact-name");
-        const chatContactAvatar = chatHeader?.querySelector("img");
-        const messageInput = document.getElementById("messageInput");
-        const btnSend = document.querySelector(".btn-send");
-        const chatForm = document.getElementById("chatForm");
-        const perfilBtn = document.getElementById("perfilBtn");
-        const perfilDropdown = document.getElementById("perfilDropdown");
-
-        let contatoAtual = null;
-
-        // Carrega histórico de mensagens
-        async function carregarHistorico(emailDestino) {
-            contatoAtual = emailDestino;
-            try {
-                const res = await fetch(`http://localhost:8080/mensagens/historico/${email}/${emailDestino}`);
-                if (!res.ok) {
-                    chatMessages.innerHTML = `<div class="text-muted" style="padding: 20px;">Nenhuma conversa encontrada.</div>`;
-                    return;
-                }
-
-                const mensagens = await res.json();
-                chatMessages.innerHTML = "";
-
-                mensagens.forEach(msg => {
-                    const div = document.createElement("div");
-                    div.className = `message ${msg.remetente === email ? "sent" : "received"}`;
-                    div.textContent = msg.mensagem;
-                    chatMessages.appendChild(div);
-                });
-
-                chatContactName.textContent = emailDestino;
-                chatContactAvatar.src = "images/noProfile.jpg";
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                messageInput.disabled = false;
-                btnSend.disabled = true;
-            } catch (err) {
-                console.error("Erro ao carregar histórico:", err);
-            }
-        }
-
-        // Carrega a lista de contatos
-        async function carregarContatos(emailUsuario) {
-            try {
-                const response = await fetch(`http://localhost:8080/contatos/${encodeURIComponent(emailUsuario)}`);
-                if (!response.ok) {
-                    console.error("Erro ao buscar contatos");
-                    return;
-                }
-
-                const data = await response.json();
-                const contactList = document.getElementById("contact-list");
-                if (!contactList) return;
-
-                contactList.innerHTML = "";
-
-                data.contatos.forEach(contato => {
-                    if (contato !== emailUsuario) {
-                        const contactDiv = document.createElement("div");
-                        contactDiv.classList.add("contact");
-                        contactDiv.textContent = contato;
-
-                        contactDiv.addEventListener("click", () => {
-                            document.querySelectorAll(".contact").forEach(c => c.classList.remove("active"));
-                            contactDiv.classList.add("active");
-                            carregarHistorico(contato);
-                        });
-
-                        contactList.appendChild(contactDiv);
-                    }
-                });
-            } catch (error) {
-                console.error("Erro ao carregar contatos:", error);
-            }
-        }
-
-        // Envia mensagens no chat
-        chatForm?.addEventListener("submit", e => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (!text || !contatoAtual) return;
-
-            const div = document.createElement("div");
-            div.className = "message sent";
-            div.textContent = text;
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            messageInput.value = "";
-            btnSend.disabled = true;
-
-            // Simula resposta
-            setTimeout(() => {
-                const reply = document.createElement("div");
-                reply.className = "message received";
-                reply.textContent = "Recebi sua mensagem!";
-                chatMessages.appendChild(reply);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 1500);
-        });
-
-        // Habilita ou desabilita o botão "Enviar"
-        messageInput?.addEventListener("input", () => {
-            btnSend.disabled = !messageInput.value.trim();
-        });
-
-        // Toggle do menu de perfil
-        perfilBtn?.addEventListener("click", () => {
-            perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
-        });
-
-        window.addEventListener("click", e => {
-            if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
-                perfilDropdown.style.display = "none";
-            }
-        });
-
-        // Carrega contatos ao iniciar
-        if (email) {
-            carregarContatos(email);
+    window.addEventListener("click", e => {
+        if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
+            perfilDropdown.style.display = "none";
         }
     });
 
-    // Conecta ao WebSocket
-    function connectWebSocket(event) {
-        event.preventDefault();
-        currentUserEmail = document.getElementById("email").value;
+    document.getElementById("perfilNome").textContent = localStorage.getItem("nome") || "-";
+    document.getElementById("perfilEmail").textContent = currentUserEmail;
+    document.getElementById("perfilCodigo").textContent = localStorage.getItem("codigo_sala") || "-";
 
+    async function carregarContatos(email) {
+        console.log("Iniciando carregamento de contatos para:", email);
+        try {
+            const url = `/contatos/${encodeURIComponent(email)}`;
+            console.log("URL da requisição:", url);
+            
+            const response = await fetch(url);
+            console.log("Status da resposta:", response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Erro na resposta:", errorText);
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log("Dados recebidos:", data);
+        
+            // Restante da função...
+        } catch (err) {
+            console.error("Erro completo ao carregar contatos:", err);
+        }
+    }
+
+
+    async function carregarHistorico(emailDestino) {
+        contatoAtual = emailDestino;
+        try {
+            const res = await fetch(`/mensagens/historico/${encodeURIComponent(currentUserEmail)}/${encodeURIComponent(emailDestino)}`);
+            if (!res.ok) throw new Error("Erro ao buscar histórico");
+            const mensagens = await res.json();
+
+            chatMessages.innerHTML = "";
+            mensagens.forEach(msg => {
+                const div = document.createElement("div");
+                div.className = `message ${msg.remetente === currentUserEmail ? "sent" : "received"}`;
+                div.textContent = msg.mensagem;
+                chatMessages.appendChild(div);
+            });
+
+            chatContactName.textContent = emailDestino;
+            chatContactAvatar.src = "images/noProfile.jpg";
+            messageInput.disabled = false;
+            btnSend.disabled = true;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (err) {
+            chatMessages.innerHTML = `<div class="text-muted" style="padding: 20px;">Nenhuma conversa encontrada.</div>`;
+        }
+    }
+
+
+
+    messageInput.addEventListener("input", () => {
+        btnSend.disabled = !messageInput.value.trim();
+    });
+
+
+
+    chatForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const text = messageInput.value.trim();
+        if (!text || !contatoAtual) return;
+
+        const div = document.createElement("div");
+        div.className = "message sent";
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        messageInput.value = "";
+        btnSend.disabled = true;
+
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+                type: "private_message",
+                recipient: contatoAtual,
+                content: text
+            }));
+        }
+    });
+
+
+
+    function conectarWebSocket() {
         ws = new WebSocket(`ws://localhost:8080/ws/${encodeURIComponent(currentUserEmail)}`);
 
         ws.onopen = () => {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("chat-section").style.display = "block";
-            document.getElementById("user-email").textContent = currentUserEmail;
-
-            carregarContatos(currentUserEmail);
+            console.log("Conexão WebSocket estabelecida");
+            // Chamada garantida após conexão aberta
+            carregarContatos(currentUserEmail); 
         };
 
         ws.onmessage = (event) => {
+            console.log("Mensagem recebida:", event.data);
             const data = JSON.parse(event.data);
 
-            if (data.type === "user_list") {
-                updateOnlineUsers(data.users);
-            } else if (data.type === "message") {
-                addMessage(data.content, data.is_private);
+            if (data.type === "message") {
+                const reply = document.createElement("div");
+                reply.className = "message received";
+                reply.textContent = data.content;
+                chatMessages.appendChild(reply);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+            // Adicione para atualizar contatos quando receber nova lista
+            else if (data.type === "user_list") { 
+                carregarContatos(currentUserEmail);
+            }
+        };
+
+        ws.onerror = (error) => {
+            console.error("Erro WebSocket:", error);
         };
     }
 
-    // Envia mensagem privada via WebSocket
-    function sendPrivateMessage(event) {
-        event.preventDefault();
-
-        const recipient = document.getElementById("recipient-email")?.value;
-        const input = document.getElementById("privateMessage");
-        if (!recipient || !ws) {
-            alert("Selecione um destinatário e verifique a conexão.");
-            return;
-        }
-
-        ws.send(JSON.stringify({
-            type: "private_message",
-            recipient: recipient,
-            content: input.value
-        }));
-
-        input.value = "";
-    }
+    console.log("Email carregado:", currentUserEmail);
+    carregarContatos(currentUserEmail || "defala@gmail.com");
+    conectarWebSocket();
 </script>
-
-
-
 </body>
-
 </html>
