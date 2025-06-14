@@ -1,24 +1,40 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from datetime import datetime
 import json
 import sqlite3
 import urllib.parse
-from datetime import datetime
 
 
 app = FastAPI()
 
 DB_FILE = "usuarios.db"
 
-with sqlite3.connect("usuarios.db") as conn:
-    cursor = conn.cursor()
-    try:
+def coluna_existe(tabela, coluna):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({tabela})")
+        colunas = [info[1] for info in cursor.fetchall()]
+        return coluna in colunas
+
+with sqlite3.connect(DB_FILE) as conn:
+    if not coluna_existe("mensagens", "entregue"):
+        cursor = conn.cursor()
         cursor.execute("ALTER TABLE mensagens ADD COLUMN entregue INTEGER DEFAULT 0;")
         conn.commit()
         print("Coluna 'entregue' adicionada com sucesso.")
-    except sqlite3.OperationalError as e:
-        print(f"Erro ao adicionar coluna: {e}")
+    else:
+        print("Coluna 'entregue' já existe.")
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 html = """
@@ -117,7 +133,7 @@ html = """
                 event.preventDefault();
                 currentUserEmail = document.getElementById('email').value;
 
-                ws = new WebSocket(`ws://localhost:8000/ws/${encodeURIComponent(currentUserEmail)}`);
+                ws = new WebSocket(`ws://localhost:8080/ws/${encodeURIComponent(currentUserEmail)}`);
 
                 ws.onopen = () => {
                     document.getElementById('login-section').style.display = 'none';
@@ -362,7 +378,6 @@ async def websocket_endpoint(websocket: WebSocket, email: str):
                 "is_private": False
             })
         )
-
 
 
 def salvar_mensagem(remetente: str, destinatario: str | None, mensagem: str):
