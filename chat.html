@@ -432,7 +432,7 @@
     document.getElementById("perfilEmail").textContent = currentUserEmail;
     document.getElementById("perfilCodigo").textContent = localStorage.getItem("codigo_sala") || "-";
 
- async function carregarContatos(email) {
+    async function carregarContatos(email) {
         if (!email) {
             console.error("Email inválido para carregar contatos");
             return;
@@ -468,7 +468,10 @@
                                 <div class="contact-name">${contato}</div>
                             </div>
                         `;
-                        contactElement.onclick = () => carregarHistorico(contato);
+                        contactElement.onclick = () => {
+                            console.log(`Contato clicado: ${contato}`);
+                            carregarHistorico(contato);
+                        };
                         contactList.appendChild(contactElement);
                     }
                 });
@@ -480,6 +483,63 @@
             contactList.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">Erro ao carregar contatos: ${err.message}</div>`;
         }
     }
+
+
+    async function carregarHistorico(emailDestino) {
+        if (!emailDestino || !currentUserEmail) {
+            console.error("Email inválido para carregar histórico");
+            return;
+        }
+
+        console.log(`Carregando histórico entre ${currentUserEmail} e ${emailDestino}`);
+
+        try {
+            const url = `/mensagens/historico/${encodeURIComponent(currentUserEmail)}/${encodeURIComponent(emailDestino)}`;
+            console.log("URL do histórico:", url);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Erro ao buscar histórico:", errorText);
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+
+            const mensagens = await response.json();
+            console.log("Mensagens recebidas:", mensagens);
+
+            chatMessages.innerHTML = "";
+
+            if (mensagens.length === 0) {
+                chatMessages.innerHTML = `
+                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                        Nenhuma mensagem encontrada com este contato
+                    </div>`;
+                return;
+            }
+
+            mensagens.forEach(msg => {
+                const div = document.createElement("div");
+                div.className = `message ${msg.remetente === currentUserEmail ? "sent" : "received"}`;
+                div.textContent = msg.mensagem;
+                chatMessages.appendChild(div);
+            });
+
+            chatContactName.textContent = emailDestino;
+            messageInput.disabled = false;
+            btnSend.disabled = true;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        } catch (err) {
+            console.error("Erro ao carregar histórico:", err);
+            chatMessages.innerHTML = `
+                <div class="text-danger" style="padding: 20px; text-align: center;">
+                    Erro ao carregar histórico: ${err.message}
+                </div>`;
+        }
+    }
+
+
 
     function conectarWebSocket() {
         if (!currentUserEmail) {
