@@ -454,126 +454,205 @@
     </div>
 
     <script>
-        const contacts = [{
-            id: 1,
-            name: 'Prof. João da Silva',
-            avatar: 'images/noProfile.jpg', // imagem genérica padrão
-
-            lastMessage: 'De nada!',
-            messages: [{
-                text: 'Obrigado!',
-                sent: true
-            }, {
-                text: 'De nada!',
-                sent: false
-            }]
-        }];
-
-        const params = new URLSearchParams(window.location.search);
-        const destinatario = params.get("destinatario");
-        const emailUsuario = localStorage.getItem("email");
-        const nomeUsuario = localStorage.getItem("nome");
-
-        const contactList = document.getElementById('contactList');
-        const chatMessages = document.getElementById('chatMessages');
-        const chatHeader = document.getElementById('chatHeader');
-        const chatContactName = chatHeader.querySelector('.chat-contact-name');
-        const chatContactAvatar = chatHeader.querySelector('img');
-        const messageInput = document.getElementById('messageInput');
-        const btnSend = document.querySelector('.btn-send');
-        const chatForm = document.getElementById('chatForm');
-
-        function renderContacts() {
-            contactList.innerHTML = '';
-            const contact = contacts[0];
-            const div = document.createElement('div');
-            div.className = 'contact active';
-            div.innerHTML = `
-        <img src="${contact.avatar}" alt="${contact.name}" />
-        <div class="contact-info">
-          <div class="contact-name">${contact.name}</div>
-          <div class="contact-last-message">${contact.lastMessage}</div>
-        </div>`;
-            contactList.appendChild(div);
-        }
-
-        function renderChat(contact) {
-            chatContactName.textContent = contact.name;
-            chatContactAvatar.src = contact.avatar;
-            chatMessages.innerHTML = '';
-            contact.messages.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.sent ? 'sent' : 'received'}`;
-                div.textContent = msg.text;
-                chatMessages.appendChild(div);
-            });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        chatForm.addEventListener('submit', e => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (!text) return;
-            const contact = contacts[0];
-            contact.messages.push({
-                text,
-                sent: true
-            });
-            contact.lastMessage = text;
-            renderChat(contact);
-            renderContacts();
-            messageInput.value = '';
-            btnSend.disabled = true;
-            setTimeout(() => {
-                contact.messages.push({
-                    text: 'Recebi sua mensagem!',
-                    sent: false
-                });
-                contact.lastMessage = 'Recebi sua mensagem!';
-                renderChat(contact);
-                renderContacts();
-            }, 1500);
-        });
-
-        messageInput.addEventListener('input', () => {
-            btnSend.disabled = !messageInput.value.trim();
-        });
-
-        renderContacts();
-        renderChat(contacts[0]);
-        messageInput.disabled = false;
-
         const perfilBtn = document.getElementById("perfilBtn");
         const perfilDropdown = document.getElementById("perfilDropdown");
-        const produzirBtn = document.getElementById("produzirBtn");
-        const produzirDropdown = document.getElementById("produzirDropdown");
+        const chatContactName = document.getElementById("chatContactName");
+        const chatContactAvatar = document.getElementById("chatContactAvatar");
+        const chatMessages = document.getElementById("chatMessages");
+        const chatForm = document.getElementById("chatForm");
+        const messageInput = document.getElementById("messageInput");
+        const btnSend = document.getElementById("btnSend");
+        const contactList = document.getElementById("contact-list");
 
-        perfilBtn.addEventListener("click", () => {
+        let currentUserEmail = localStorage.getItem("email") || "";
+        let contatoAtual = null;
+        let ws = null;
+
+        perfilBtn.addEventListener("click", e => {
+            e.stopPropagation();
             perfilDropdown.style.display = perfilDropdown.style.display === "block" ? "none" : "block";
-            produzirDropdown.style.display = "none";
         });
 
-        produzirBtn.addEventListener("click", () => {
-            produzirDropdown.style.display = produzirDropdown.style.display === "block" ? "none" : "block";
-            perfilDropdown.style.display = "none";
-        });
-
-        window.addEventListener("click", function(e) {
+        window.addEventListener("click", e => {
             if (!perfilBtn.contains(e.target) && !perfilDropdown.contains(e.target)) {
                 perfilDropdown.style.display = "none";
             }
-            if (!produzirBtn.contains(e.target) && !produzirDropdown.contains(e.target)) {
-                produzirDropdown.style.display = "none";
+        });
+
+        document.getElementById("perfilNome").textContent = localStorage.getItem("nome") || "-";
+        document.getElementById("perfilEmail").textContent = currentUserEmail;
+        document.getElementById("perfilCodigo").textContent = localStorage.getItem("codigo_sala") || "-";
+
+        async function carregarContatos(email) {
+            if (!email) {
+                console.error("Email inválido para carregar contatos");
+                return;
             }
+
+            try {
+                const url = `http://localhost:8080/contatos/${encodeURIComponent(email)}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                contactList.innerHTML = "";
+
+                if (data.contatos && data.contatos.length > 0) {
+                    data.contatos.forEach(contato => {
+                        if (contato !== email) {
+                            const contactElement = document.createElement("div");
+                            contactElement.className = "contact";
+                            contactElement.innerHTML = `
+                                <img src="images/noProfile.jpg" alt="${contato}" />
+                                <div class="contact-info">
+                                    <div class="contact-name">${contato}</div>
+                                </div>
+                            `;
+                            contactElement.onclick = () => {
+                                contatoAtual = contato; // <-- Define contato atual
+                                carregarHistorico(contato);
+                            };
+                            contactList.appendChild(contactElement);
+                        }
+                    });
+                } else {
+                    contactList.innerHTML = `<div class="text-muted" style="padding: 20px; text-align: center;">Nenhum contato encontrado</div>`;
+                }
+            } catch (err) {
+                console.error("Erro ao carregar contatos:", err);
+                contactList.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">Erro ao carregar contatos: ${err.message}</div>`;
+            }
+        }
+
+        async function carregarHistorico(emailDestino) {
+            if (!emailDestino || !currentUserEmail) {
+                console.error("Email inválido para carregar histórico");
+                return;
+            }
+
+            try {
+                const url = `http://localhost:8080/mensagens/historico/${encodeURIComponent(currentUserEmail)}/${encodeURIComponent(emailDestino)}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+
+                const mensagens = await response.json();
+                chatMessages.innerHTML = "";
+
+                if (mensagens.length === 0) {
+                    chatMessages.innerHTML = `<div class="text-muted" style="padding: 20px; text-align: center;">Nenhuma mensagem encontrada com este contato</div>`;
+                    return;
+                }
+
+                mensagens.forEach(msg => {
+                    const div = document.createElement("div");
+                    div.className = `message ${msg.remetente === currentUserEmail ? "sent" : "received"}`;
+                    div.textContent = msg.mensagem;
+                    chatMessages.appendChild(div);
+                });
+
+                chatContactName.textContent = emailDestino;
+                messageInput.disabled = false;
+                btnSend.disabled = true;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (err) {
+                console.error("Erro ao carregar histórico:", err);
+                chatMessages.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">Erro ao carregar histórico: ${err.message}</div>`;
+            }
+        }
+
+        function conectarWebSocket() {
+            if (!currentUserEmail) {
+                console.error("Nenhum email disponível para conectar WebSocket");
+                return;
+            }
+
+            ws = new WebSocket(`ws://localhost:8080/ws/${encodeURIComponent(currentUserEmail)}`);
+
+            ws.onopen = () => {
+                console.log("Conexão WebSocket estabelecida");
+                carregarContatos(currentUserEmail);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === "message") {
+                        if (data.sender === contatoAtual || data.recipient === contatoAtual) {
+                            const div = document.createElement("div");
+                            div.className = `message ${data.sender === currentUserEmail ? "sent" : "received"}`;
+                            div.textContent = data.content;
+                            chatMessages.appendChild(div);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                    } else if (data.type === "user_list") {
+                        console.log("Usuários online:", data.users);
+                    }
+                } catch (e) {
+                    console.error("Erro ao processar mensagem:", e, event.data);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error("Erro WebSocket:", error);
+            };
+
+            ws.onclose = () => {
+                console.log("Conexão WebSocket fechada");
+            };
+        }
+
+        // ✅ Enviar mensagem sem recarregar a página
+        function enviarMensagem(event) {
+            event.preventDefault(); // <-- ESSENCIAL: impede reload
+
+            const mensagem = messageInput.value.trim();
+            if (!mensagem || !ws || ws.readyState !== WebSocket.OPEN || !contatoAtual) {
+                return;
+            }
+
+            const payload = {
+                type: "message",
+                sender: currentUserEmail,
+                recipient: contatoAtual,
+                content: mensagem
+            };
+
+            ws.send(JSON.stringify(payload));
+
+            const div = document.createElement("div");
+            div.className = "message sent";
+            div.textContent = mensagem;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            messageInput.value = "";
+            btnSend.disabled = true;
+        }
+
+        // Habilita/desabilita botão "Enviar"
+        messageInput.addEventListener("input", () => {
+            btnSend.disabled = messageInput.value.trim() === "";
         });
 
-        // Redirecionamento do logo Lexus
-        const tipoUsuario = "aluno"; // "professor" se necessário
-        document.getElementById("logoLexus").addEventListener("click", () => {
-            window.location.href = tipoUsuario === "professor" ? "home.html" : "home-aluno.html";
-        });
-    </script>
+        // ⏎ Evento de envio do formulário
+        chatForm.addEventListener("submit", enviarMensagem);
 
+        // Inicialização
+        if (currentUserEmail) {
+            conectarWebSocket();
+        } else {
+            contactList.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">
+                Você não está logado. Por favor, <a href="login.html">faça login</a>.
+            </div>`;
+            messageInput.disabled = true;
+            btnSend.disabled = true;
+        }
+</script>
 </body>
-
 </html>

@@ -437,26 +437,17 @@
             console.error("Email inválido para carregar contatos");
             return;
         }
-        
-        console.log("Iniciando carregamento de contatos para:", email);
+
         try {
-            // URL ABSOLUTA com porta explícita
             const url = `http://localhost:8080/contatos/${encodeURIComponent(email)}`;
-            console.log("URL da requisição:", url);
-            
             const response = await fetch(url);
-            console.log("Status da resposta:", response.status);
-            
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Erro na resposta:", errorText);
                 throw new Error(`Erro HTTP: ${response.status}`);
             }
-            
-            const data = await response.json();
-            console.log("Dados recebidos:", data);
 
+            const data = await response.json();
             contactList.innerHTML = "";
+
             if (data.contatos && data.contatos.length > 0) {
                 data.contatos.forEach(contato => {
                     if (contato !== email) {
@@ -469,7 +460,7 @@
                             </div>
                         `;
                         contactElement.onclick = () => {
-                            console.log(`Contato clicado: ${contato}`);
+                            contatoAtual = contato; // <-- Define contato atual
                             carregarHistorico(contato);
                         };
                         contactList.appendChild(contactElement);
@@ -479,11 +470,10 @@
                 contactList.innerHTML = `<div class="text-muted" style="padding: 20px; text-align: center;">Nenhum contato encontrado</div>`;
             }
         } catch (err) {
-            console.error("Erro completo ao carregar contatos:", err);
+            console.error("Erro ao carregar contatos:", err);
             contactList.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">Erro ao carregar contatos: ${err.message}</div>`;
         }
     }
-
 
     async function carregarHistorico(emailDestino) {
         if (!emailDestino || !currentUserEmail) {
@@ -491,30 +481,18 @@
             return;
         }
 
-        console.log(`Carregando histórico entre ${currentUserEmail} e ${emailDestino}`);
-
         try {
-            const url = `/mensagens/historico/${encodeURIComponent(currentUserEmail)}/${encodeURIComponent(emailDestino)}`;
-            console.log("URL do histórico:", url);
-
+            const url = `http://localhost:8080/mensagens/historico/${encodeURIComponent(currentUserEmail)}/${encodeURIComponent(emailDestino)}`;
             const response = await fetch(url);
-
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Erro ao buscar histórico:", errorText);
                 throw new Error(`Erro HTTP: ${response.status}`);
             }
 
             const mensagens = await response.json();
-            console.log("Mensagens recebidas:", mensagens);
-
             chatMessages.innerHTML = "";
 
             if (mensagens.length === 0) {
-                chatMessages.innerHTML = `
-                    <div class="text-muted" style="padding: 20px; text-align: center;">
-                        Nenhuma mensagem encontrada com este contato
-                    </div>`;
+                chatMessages.innerHTML = `<div class="text-muted" style="padding: 20px; text-align: center;">Nenhuma mensagem encontrada com este contato</div>`;
                 return;
             }
 
@@ -532,21 +510,16 @@
 
         } catch (err) {
             console.error("Erro ao carregar histórico:", err);
-            chatMessages.innerHTML = `
-                <div class="text-danger" style="padding: 20px; text-align: center;">
-                    Erro ao carregar histórico: ${err.message}
-                </div>`;
+            chatMessages.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">Erro ao carregar histórico: ${err.message}</div>`;
         }
     }
-
-
 
     function conectarWebSocket() {
         if (!currentUserEmail) {
             console.error("Nenhum email disponível para conectar WebSocket");
             return;
         }
-        
+
         ws = new WebSocket(`ws://localhost:8080/ws/${encodeURIComponent(currentUserEmail)}`);
 
         ws.onopen = () => {
@@ -555,20 +528,19 @@
         };
 
         ws.onmessage = (event) => {
-            console.log("Mensagem WebSocket recebida:", event.data);
             try {
                 const data = JSON.parse(event.data);
-                console.log("Tipo de mensagem:", data.type);
-                
+
                 if (data.type === "message") {
-                    const div = document.createElement("div");
-                    div.className = `message ${data.sender === currentUserEmail ? "sent" : "received"}`;
-                    div.textContent = data.content;
-                    chatMessages.appendChild(div);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-                else if (data.type === "user_list") {
-                    console.log("Atualizando lista de usuários:", data.users);
+                    if (data.sender === contatoAtual || data.recipient === contatoAtual) {
+                        const div = document.createElement("div");
+                        div.className = `message ${data.sender === currentUserEmail ? "sent" : "received"}`;
+                        div.textContent = data.content;
+                        chatMessages.appendChild(div);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                } else if (data.type === "user_list") {
+                    console.log("Usuários online:", data.users);
                 }
             } catch (e) {
                 console.error("Erro ao processar mensagem:", e, event.data);
@@ -584,18 +556,46 @@
         };
     }
 
-    // Verificação e inicialização
-    console.log("Dados do localStorage:", {
-        email: localStorage.getItem("email"),
-        nome: localStorage.getItem("nome"),
-        codigo: localStorage.getItem("codigo_sala")
+    // ✅ Enviar mensagem sem recarregar a página
+    function enviarMensagem(event) {
+        event.preventDefault(); // <-- ESSENCIAL: impede reload
+
+        const mensagem = messageInput.value.trim();
+        if (!mensagem || !ws || ws.readyState !== WebSocket.OPEN || !contatoAtual) {
+            return;
+        }
+
+        const payload = {
+            type: "message",
+            sender: currentUserEmail,
+            recipient: contatoAtual,
+            content: mensagem
+        };
+
+        ws.send(JSON.stringify(payload));
+
+        const div = document.createElement("div");
+        div.className = "message sent";
+        div.textContent = mensagem;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        messageInput.value = "";
+        btnSend.disabled = true;
+    }
+
+    // Habilita/desabilita botão "Enviar"
+    messageInput.addEventListener("input", () => {
+        btnSend.disabled = messageInput.value.trim() === "";
     });
 
+    // ⏎ Evento de envio do formulário
+    chatForm.addEventListener("submit", enviarMensagem);
+
+    // Inicialização
     if (currentUserEmail) {
-        console.log("Email carregado:", currentUserEmail);
         conectarWebSocket();
     } else {
-        console.error("Nenhum email encontrado no localStorage");
         contactList.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">
             Você não está logado. Por favor, <a href="login.html">faça login</a>.
         </div>`;
