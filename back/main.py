@@ -521,5 +521,3 @@ def verificar_usuario_existe(email):
         return resultado[0]  # Retorna o nome do usuário
     return None
 
-
-#----------------------------------------CHAT----------------------------------------------

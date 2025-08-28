@@ -347,6 +347,10 @@
         <div class="alunos-list" id="alunosList"></div>
     </div>
 
+
+
+
+
     <script>
         const perfilBtn = document.getElementById("perfilBtn");
         const perfilDropdown = document.getElementById("perfilDropdown");
@@ -390,13 +394,9 @@
     `;
 }
 
-
-
-
-
         function abrirChat(nomeAluno) {
             const url = new URL(window.location.origin + "/chat.html");
-            url.searchParams.set("aluno", nomeAluno);
+            url.searchParams.set("destinatario", nomeAluno);
             window.location.href = url.toString();
         }
 
@@ -456,7 +456,7 @@ fetch(`http://localhost:8000/alunos/${codigoSala}`)
                 <img src="${imagem}" alt="Foto do aluno ${aluno.nome}" />
                 <div class="aluno-nome">${aluno.nome}</div>
                 <p style="font-size: 13px; color: #666; margin: 6px 0;">${aluno.email}</p>
-                <button class="btn-msg" onclick="abrirChat('${aluno.nome}')">Enviar mensagem</button>
+                <button class="btn-msg" onclick="abrirChat(encodeURIComponent('${aluno.email}'))">Enviar mensagem</button>
             `;
             alunosList.appendChild(card);
         });

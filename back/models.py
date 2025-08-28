@@ -394,6 +394,8 @@ def salvar_mensagem(remetente: str, destinatario: str | None, mensagem: str):
 
 @app.get("/mensagens/historico/{email}/{contato}")
 def obter_historico_filtrado(email: str, contato: str):
+    historico = []
+
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -406,9 +408,8 @@ def obter_historico_filtrado(email: str, contato: str):
         mensagens = cursor.fetchall()
 
     if not mensagens:
-        raise HTTPException(status_code=404, detail="Nenhuma mensagem encontrada entre esses usuários")
+        return historico
 
-    historico = []
     for remetente, destinatario, mensagem, timestamp in mensagens:
         historico.append({
             "remetente": remetente,

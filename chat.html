@@ -385,7 +385,7 @@
     <aside class="chat-sidebar">
         <div class="sidebar-header">Contatos</div>
         <div class="contact-list" id="contact-list"></div>
-    </aside>
+    </aside> 
 
     <main class="chat-main">
         <header class="chat-header" id="chatHeader">
@@ -460,8 +460,7 @@
                             </div>
                         `;
                         contactElement.onclick = () => {
-                            contatoAtual = contato; // <-- Define contato atual
-                            carregarHistorico(contato);
+                            window.location.href = `chat.html?destinatario=${encodeURIComponent(contato)}`;
                         };
                         contactList.appendChild(contactElement);
                     }
@@ -584,6 +583,7 @@
         btnSend.disabled = true;
     }
 
+
     // Habilita/desabilita botão "Enviar"
     messageInput.addEventListener("input", () => {
         btnSend.disabled = messageInput.value.trim() === "";
@@ -593,15 +593,30 @@
     chatForm.addEventListener("submit", enviarMensagem);
 
     // Inicialização
-    if (currentUserEmail) {
-        conectarWebSocket();
+if (currentUserEmail) {
+    conectarWebSocket();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const destinatario = urlParams.get("destinatario");
+
+    if (destinatario) {
+        contatoAtual = destinatario;
+
+        // Atualiza UI
+        chatContactName.textContent = contatoAtual;
+        chatContactAvatar.src = "images/noProfile.jpg"; // Ou carregue dinamicamente se quiser
+        messageInput.disabled = false;
+        btnSend.disabled = true;
+
+        carregarHistorico(contatoAtual);
     } else {
-        contactList.innerHTML = `<div class="text-danger" style="padding: 20px; text-align: center;">
-            Você não está logado. Por favor, <a href="login.html">faça login</a>.
-        </div>`;
+        chatMessages.innerHTML = `<div class="text-muted" style="padding: 20px; text-align: center;">Selecione um contato para começar</div>`;
         messageInput.disabled = true;
         btnSend.disabled = true;
     }
+}
+
+
 </script>
 </body>
 </html>
